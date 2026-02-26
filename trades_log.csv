@@ -1,0 +1,4 @@
+entry_date,exit_date,entry_price,exit_price,pnl,pnl_pct,exit_reason
+2023-03-30,2023-09-21,389.54,419.28,3806.6,7.63,Trailing Stop
+2023-11-14,2024-04-19,436.14,484.72,5780.96,11.14,Trailing Stop
+2024-08-14,2024-12-31,534.0,579.28,4618.5,8.48,End of Period

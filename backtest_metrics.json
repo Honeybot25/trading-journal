@@ -1,0 +1,16 @@
+{
+  "total_trades": 3,
+  "winning_trades": 3,
+  "losing_trades": 0,
+  "win_rate": 100.0,
+  "total_pnl": 14206.06,
+  "total_return_pct": 68.67,
+  "annualized_return_pct": 26.81,
+  "avg_trade": 4735.35,
+  "avg_win": 4735.35,
+  "avg_loss": 0,
+  "profit_factor": Infinity,
+  "max_drawdown_pct": -33.78,
+  "sharpe_ratio": 0.65,
+  "final_equity": 168673.86
+}

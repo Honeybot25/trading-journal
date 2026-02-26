@@ -1,0 +1,20 @@
+# SPY GEX Bot Configuration
+initial_capital: 100000
+position_size_pct: 0.10
+gex_threshold: 50000000
+rsi_oversold: 30
+rsi_overbought: 70
+gex_buffer_percent: 0.005
+gex_top_n_levels: 5
+ema_short: 9
+ema_medium: 21
+ema_long: 50
+rsi_period: 14
+risk_free_rate: 0.045
+contract_size: 100
+discord_webhook_url: null
+check_interval_minutes: 15
+market_hours_only: true
+log_level: INFO
+log_to_file: true
+save_output_json: true
