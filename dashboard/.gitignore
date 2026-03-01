@@ -21,4 +21,4 @@ build/
 *.log
 .pytest_cache/
 .coverage
-htmlcov/
+htmlcov/.env
