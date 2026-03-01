@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: gex-terminal
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: dashboard
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -b 0.0.0.0:$PORT -w 2 --timeout 60 wsgi:application
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: POLYGON_API_KEY
+        sync: false  # Set in dashboard
+      - key: PORT
+        value: 8000
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: DASH_DEBUG
+        value: 'false'
+    disk:
+      name: gex-data
+      mountPath: /app/data
+      sizeGB: 1
