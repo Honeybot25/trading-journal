@@ -16,8 +16,14 @@ import requests
 from scipy.stats import norm
 
 # Load environment variables
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
-load_dotenv(dotenv_path)
+try:
+    dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path)
+    else:
+        load_dotenv()  # Try to load from current directory
+except:
+    pass  # Environment variables may be set directly
 
 
 class PolygonRateLimiter:

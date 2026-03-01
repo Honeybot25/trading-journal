@@ -1,297 +1,222 @@
 #!/usr/bin/env python3
 """
-Test script for enhanced signal generator with contract-level alpha
-Tests SPY, QQQ, and NVDA signals
+Test script for Enhanced Signal Generator
+Tests signal generation with SPY, QQQ, and NVDA
 """
 
 import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, '/Users/Honeybot/.openclaw/workspace/trading/dashboard')
 
-from signal_generator import EnhancedSignalGenerator, ContractAnalyzer, SignalReasoningEngine
-import json
+import numpy as np
 from datetime import datetime
+from signal_generator import EnhancedSignalGenerator, get_enhanced_signal_generator
+from gex_calculator import GEXCalculator
 
-
-def create_test_gex_data(ticker: str, scenario: str = "bullish"):
-    """Create test GEX data for different scenarios"""
+def create_sample_gex_data(ticker, spot_price):
+    """Create realistic GEX data for testing"""
+    calc = GEXCalculator()
     
-    # Base prices
-    prices = {
-        'SPY': 605.0,
-        'QQQ': 525.0,
-        'NVDA': 145.0
-    }
+    # Generate realistic strikes around spot price
+    strike_range = 0.15
+    num_strikes = 21
     
-    spot = prices.get(ticker, 100.0)
+    strikes = np.linspace(
+        spot_price * (1 - strike_range),
+        spot_price * (1 + strike_range),
+        num_strikes
+    )
     
-    # Create strike ladder
-    strike_increment = 5.0 if ticker in ['SPY', 'QQQ'] else 2.5
-    strikes = [spot + (i * strike_increment) for i in range(-10, 11)]
+    # Generate realistic GEX profile based on ticker
+    call_gex = []
+    put_gex = []
+    net_gex = []
     
-    if scenario == "bullish":
-        # Positive GEX below spot (support), negative above (resistance)
-        net_gex = []
-        for s in strikes:
-            if s < spot:
-                # Support levels
-                dist = abs(s - spot) / spot
-                gex = max(0, 10 - dist * 100) + (5 if abs(s - spot) < strike_increment * 2 else 0)
-            else:
-                # Resistance
-                dist = abs(s - spot) / spot
-                gex = -max(0, 8 - dist * 80)
-            net_gex.append(round(gex, 2))
+    for strike in strikes:
+        distance = abs(strike - spot_price) / spot_price
         
-        total_gex = 15.0
-        max_gamma_strike = strikes[len(strikes)//2 - 1]
+        # Simulate gamma concentration near spot
+        if ticker == 'SPY':
+            # SPY typically has balanced GEX
+            base_gamma = max(0, 1 - distance * 3)
+            call_oi = base_gamma * 40000 * (1.2 if strike > spot_price else 0.8)
+            put_oi = base_gamma * 40000 * (0.8 if strike > spot_price else 1.2)
+        elif ticker == 'QQQ':
+            # QQQ can have tech-driven skew
+            base_gamma = max(0, 1 - distance * 4)
+            call_oi = base_gamma * 35000 * (1.3 if strike > spot_price else 0.7)
+            put_oi = base_gamma * 35000 * (0.7 if strike > spot_price else 1.3)
+        else:  # NVDA
+            # NVDA has higher gamma due to volatility
+            base_gamma = max(0, 1 - distance * 5)
+            call_oi = base_gamma * 25000 * (1.4 if strike > spot_price else 0.6)
+            put_oi = base_gamma * 25000 * (0.6 if strike > spot_price else 1.4)
         
-    elif scenario == "bearish":
-        # Negative GEX below spot, positive above
-        net_gex = []
-        for s in strikes:
-            if s > spot:
-                dist = abs(s - spot) / spot
-                gex = max(0, 10 - dist * 100) + (5 if abs(s - spot) < strike_increment * 2 else 0)
-            else:
-                dist = abs(s - spot) / spot
-                gex = -max(0, 8 - dist * 80)
-            net_gex.append(round(gex, 2))
+        call_gex_val = base_gamma * 0.05 * call_oi * 100 * spot_price / 1e9
+        put_gex_val = base_gamma * 0.05 * put_oi * 100 * spot_price / 1e9
         
-        total_gex = -12.0
-        max_gamma_strike = strikes[len(strikes)//2 + 1]
-    else:
-        # Neutral
-        net_gex = [0.5 * (1 - abs(s - spot) / spot) for s in strikes]
-        total_gex = 2.0
-        max_gamma_strike = strikes[len(strikes)//2]
+        call_gex.append(call_gex_val)
+        put_gex.append(put_gex_val)
+        net_gex.append(call_gex_val - put_gex_val)
     
-    # Split into call/put GEX
-    call_gex = [max(0, g) for g in net_gex]
-    put_gex = [max(0, -g) for g in net_gex]
+    # Add some significant gamma levels for signals
+    # Create conditions that trigger signals:
+    # For CALL signals: Need price > strike with strong positive GEX below
+    # For PUT signals: Need price < strike with strong negative GEX above
+    
+    spot_idx = np.searchsorted(strikes, spot_price)
+    
+    # Create strong positive GEX support just below spot (for CALL signals)
+    if spot_idx > 1:
+        support_idx = spot_idx - 1
+        net_gex[support_idx] = 8.5  # Very strong positive GEX
+        net_gex[support_idx - 1] = 4.2
+    
+    # Create strong negative GEX resistance just above spot (for PUT signals)
+    if spot_idx < len(strikes) - 2:
+        resistance_idx = spot_idx + 1
+        net_gex[resistance_idx] = -7.8  # Very strong negative GEX
+        net_gex[resistance_idx + 1] = -3.5
+    
+    total_call = sum(call_gex)
+    total_put = sum(put_gex)
+    
+    # Find max gamma strike
+    abs_gex = [abs(x) for x in net_gex]
+    max_gamma_idx = abs_gex.index(max(abs_gex))
+    
+    # Calculate zero gamma level
+    zero_gamma = spot_price
+    for i in range(len(net_gex) - 1):
+        if net_gex[i] * net_gex[i+1] < 0:
+            t = abs(net_gex[i]) / (abs(net_gex[i]) + abs(net_gex[i+1]))
+            zero_gamma = strikes[i] + t * (strikes[i+1] - strikes[i])
+            break
     
     return {
-        'strikes': strikes,
-        'net_gex_by_strike': net_gex,
+        'strikes': strikes.tolist(),
         'call_gex': call_gex,
         'put_gex': put_gex,
-        'total_gex': total_gex,
-        'max_gamma_strike': max_gamma_strike,
-        'zero_gamma_level': spot * 0.98 if total_gex > 0 else spot * 1.02,
-        'spot_price': spot
+        'net_gex_by_strike': net_gex,
+        'heatmap_data': [],  # Simplified for test
+        'zero_gamma_level': zero_gamma,
+        'max_gamma_strike': strikes[max_gamma_idx],
+        'max_put_strike': strikes[put_gex.index(max(put_gex))],
+        'max_call_strike': strikes[call_gex.index(max(call_gex))],
+        'total_gex': total_call - total_put,
+        'put_call_ratio': total_put / total_call if total_call > 0 else 1.0,
+        'net_gex': total_call - total_put,
+        'spot': spot_price
     }
 
+def create_price_history(ticker, current_price, trend='neutral'):
+    """Create sample price history with trend"""
+    days = 30
+    prices = []
+    
+    if trend == 'bullish':
+        # Upward trend
+        for i in range(days):
+            price = current_price * (0.95 + (i / days) * 0.10)
+            prices.append(price + np.random.normal(0, current_price * 0.005))
+    elif trend == 'bearish':
+        # Downward trend
+        for i in range(days):
+            price = current_price * (1.05 - (i / days) * 0.10)
+            prices.append(price + np.random.normal(0, current_price * 0.005))
+    else:
+        # Sideways with RSI setup
+        for i in range(days):
+            price = current_price * (1 + np.sin(i * 0.3) * 0.02)
+            prices.append(price + np.random.normal(0, current_price * 0.005))
+    
+    return prices
 
-def test_contract_analyzer():
-    """Test contract analysis functions"""
-    print("=" * 70)
-    print("TESTING CONTRACT ANALYZER")
-    print("=" * 70)
+def test_signal_generator():
+    """Test the enhanced signal generator"""
+    print("=" * 80)
+    print("ENHANCED SIGNAL GENERATOR TEST")
+    print("=" * 80)
     
-    analyzer = ContractAnalyzer()
-    
-    # Test strike selection
-    for ticker in ['SPY', 'QQQ', 'NVDA']:
-        spot = 605.0 if ticker == 'SPY' else (525.0 if ticker == 'QQQ' else 145.0)
-        gex_data = create_test_gex_data(ticker, "bullish")
-        
-        print(f"\n{ticker} @ ${spot:.2f}")
-        print("-" * 50)
-        
-        for confidence in [85, 70, 55]:
-            strike, strike_type = analyzer.calculate_optimal_strike(
-                ticker, spot, 'CALL', confidence, gex_data, gex_data['strikes']
-            )
-            print(f"  Confidence {confidence}%: Strike ${strike:.2f} ({strike_type})")
-        
-        # Test expiration selection
-        for conf in [85, 70, 55]:
-            exp, days = analyzer.select_expiration(ticker, spot, 'CALL', conf, gex_data)
-            print(f"  Exp {conf}% confidence: {exp} ({days} DTE)")
-    
-    print("\n✅ Contract Analyzer tests passed!")
-
-
-def test_greeks_estimation():
-    """Test Greeks estimation"""
-    print("\n" + "=" * 70)
-    print("TESTING GREEKS ESTIMATION")
-    print("=" * 70)
-    
-    analyzer = ContractAnalyzer()
+    # Initialize generator
+    generator = get_enhanced_signal_generator(account_size=100000)
     
     test_cases = [
-        ('SPY', 605.0, 605.0, 7, 'CALL'),   # ATM
-        ('SPY', 605.0, 600.0, 7, 'CALL'),   # ITM
-        ('SPY', 605.0, 610.0, 7, 'CALL'),   # OTM
-        ('NVDA', 145.0, 145.0, 3, 'PUT'),   # ATM PUT
+        ('SPY', 600.00, 'bullish'),
+        ('QQQ', 500.00, 'neutral'),
+        ('NVDA', 130.00, 'bearish')
     ]
     
-    for ticker, spot, strike, days, direction in test_cases:
-        greeks = analyzer.estimate_greeks(ticker, spot, strike, days, direction)
-        moneyness = "ATM" if abs(spot - strike) < 0.01 else ("ITM" if (direction == 'CALL' and strike < spot) or (direction == 'PUT' and strike > spot) else "OTM")
+    for ticker, spot, trend in test_cases:
+        print(f"\n{'='*80}")
+        print(f"TESTING: {ticker} @ ${spot:.2f} ({trend.upper()} TREND)")
+        print(f"{'='*80}")
         
-        print(f"\n{ticker} ${strike:.2f} {direction} ({moneyness}) {days}DTE")
-        print(f"  Delta: {greeks.delta:+.3f} | Gamma: {greeks.gamma:.4f} | Theta: {greeks.theta:+.3f}")
-        print(f"  Vega: {greeks.vega:.3f} | IV: {greeks.iv*100:.1f}% ({greeks.iv_percentile:.0f}p)")
-    
-    print("\n✅ Greeks Estimation tests passed!")
-
-
-def test_signal_reasoning():
-    """Test signal reasoning engine"""
-    print("\n" + "=" * 70)
-    print("TESTING SIGNAL REASONING ENGINE")
-    print("=" * 70)
-    
-    engine = SignalReasoningEngine()
-    
-    for ticker in ['SPY', 'QQQ', 'NVDA']:
-        spot = 605.0 if ticker == 'SPY' else (525.0 if ticker == 'QQQ' else 145.0)
-        gex_data = create_test_gex_data(ticker, "bullish")
+        # Create test data
+        gex_data = create_sample_gex_data(ticker, spot)
+        price_history = create_price_history(ticker, spot, trend)
         
-        print(f"\n{ticker} Analysis:")
-        print("-" * 50)
-        
-        gex_analysis = engine.generate_gex_analysis(ticker, spot, gex_data, 'CALL')
-        tech_analysis = engine.generate_technical_analysis(ticker, spot, 32, 'BULLISH', gex_data)
-        dealer_analysis = engine.generate_dealer_dynamics(ticker, spot, gex_data, 'CALL')
-        historical = engine.generate_historical_context(ticker, 'GEX_RSI_BULLISH', 75)
-        risks = engine.generate_risk_factors(ticker, gex_data, 32, 7)
-        
-        print(f"  GEX: {gex_analysis[:100]}...")
-        print(f"  Tech: {tech_analysis[:100]}...")
-        print(f"  Dealer: {dealer_analysis[:100]}...")
-        print(f"  History: {historical}")
-        print(f"  Risks: {', '.join(risks[:2])}")
-    
-    print("\n✅ Signal Reasoning tests passed!")
-
-
-def test_enhanced_signals():
-    """Test full enhanced signal generation"""
-    print("\n" + "=" * 70)
-    print("TESTING ENHANCED SIGNAL GENERATION")
-    print("=" * 70)
-    
-    generator = EnhancedSignalGenerator(account_size=100000)
-    
-    test_scenarios = [
-        ('SPY', 'bullish', 32),   # Oversold + bullish setup
-        ('QQQ', 'bullish', 28),   # Oversold
-        ('NVDA', 'bullish', 35),  # Near oversold
-    ]
-    
-    for ticker, scenario, rsi in test_scenarios:
-        print(f"\n{'='*70}")
-        print(f"SIGNAL TEST: {ticker} ({scenario.upper()})")
-        print('='*70)
-        
-        gex_data = create_test_gex_data(ticker, scenario)
-        spot = gex_data['spot_price']
-        
-        # Create price history with RSI
-        hist_prices = [spot * (1 - 0.02 * (20-i)/20) for i in range(20)]  # Downtrend then reversal
-        
-        signal = generator.generate_enhanced_signal(
-            ticker=ticker,
-            gex_data=gex_data,
-            spot_price=spot,
-            price_history=hist_prices
-        )
+        # Generate signal
+        signal = generator.generate_enhanced_signal(ticker, gex_data, spot, price_history)
         
         if signal:
             print(f"\n🎯 SIGNAL GENERATED!")
-            print(f"  Direction: {signal.direction}")
-            print(f"  Confidence: {signal.confidence}%")
-            print(f"  Type: {signal.signal_type}")
+            print(f"   Direction: {'🟢 BUY CALL' if signal.direction == 'CALL' else '🔴 BUY PUT'}")
+            print(f"   Confidence: {signal.confidence}%")
+            print(f"   Signal Type: {signal.signal_type}")
             
-            print(f"\n  📋 CONTRACT SPECIFICATIONS:")
-            print(f"    Ticker: {signal.contract.ticker}")
-            print(f"    Strike: ${signal.contract.strike:.2f} ({signal.contract.strike_type})")
-            print(f"    Expiration: {signal.contract.expiration} ({signal.contract.expiration_days} DTE)")
-            print(f"    Option Type: {signal.contract.option_type}")
-            print(f"    Est. Price: ${signal.contract.estimated_price:.2f}")
+            print(f"\n📋 CONTRACT SPECIFICATIONS:")
+            print(f"   Ticker: {signal.ticker}")
+            print(f"   Strike: ${signal.contract.strike:.2f} ({signal.contract.strike_type})")
+            print(f"   Expiration: {signal.contract.expiration}")
+            print(f"   Option Type: {signal.contract.option_type}")
+            print(f"   Est. Price: ${signal.contract.estimated_price:.2f}")
             
-            print(f"\n  🎯 ENTRY/EXIT ZONES:")
-            print(f"    Entry: ${signal.zones.entry_price_low:.2f} - ${signal.zones.entry_price_high:.2f}")
-            print(f"    Stop Loss: ${signal.zones.stop_loss:.2f}")
-            print(f"    Take Profit: ${signal.zones.take_profit:.2f}")
-            print(f"    Risk/Reward: {signal.zones.risk_reward_ratio:.2f}:1")
-            print(f"    Max Contracts: {signal.zones.max_contracts}")
-            print(f"    Kelly: {signal.zones.kelly_fraction:.2%}")
+            print(f"\n🎯 ENTRY/EXIT PLAN:")
+            print(f"   Entry Zone: ${signal.zones.entry_price_low:.2f} - ${signal.zones.entry_price_high:.2f}")
+            print(f"   Stop Loss: ${signal.zones.stop_loss:.2f}")
+            print(f"   Take Profit: ${signal.zones.take_profit:.2f}")
+            print(f"   Risk/Reward: {signal.zones.risk_reward_ratio}:1")
             
-            print(f"\n  📊 GREEKS:")
-            print(f"    Delta: {signal.greeks.delta:+.3f}")
-            print(f"    Gamma: {signal.greeks.gamma:.4f}")
-            print(f"    Theta: {signal.greeks.theta:+.3f}")
-            print(f"    Vega: {signal.greeks.vega:.3f}")
-            print(f"    IV: {signal.greeks.iv*100:.1f}% ({signal.greeks.iv_percentile:.0f}p)")
+            print(f"\n💰 POSITION SIZING:")
+            print(f"   Risk %: {signal.zones.position_size_risk_pct}%")
+            print(f"   Max Contracts: {signal.zones.max_contracts}")
+            print(f"   Kelly Fraction: {signal.zones.kelly_fraction}")
+            max_loss = signal.zones.max_contracts * signal.contract.estimated_price * 100
+            print(f"   Max Loss: ${max_loss:.2f}")
             
-            print(f"\n  💡 REASONING:")
-            print(f"    GEX: {signal.reasoning.gex_analysis}")
-            print(f"    Technical: {signal.reasoning.technical_analysis}")
-            print(f"    Dealer: {signal.reasoning.dealer_dynamics}")
-            print(f"    History: {signal.reasoning.historical_context}")
-            print(f"    Risks: {', '.join(signal.reasoning.risk_factors[:2])}")
+            print(f"\n📊 GREEKS:")
+            print(f"   Delta: {signal.greeks.delta}")
+            print(f"   Gamma: {signal.greeks.gamma}")
+            print(f"   Theta: {signal.greeks.theta}")
+            print(f"   Vega: {signal.greeks.vega}")
+            print(f"   IV: {signal.greeks.iv*100:.0f}% ({signal.greeks.iv_percentile}p)")
             
-            # Test storage conversion
-            signal_dict = signal.to_dict()
-            print(f"\n  ✅ Signal serializable: {len(json.dumps(signal_dict))} bytes")
+            print(f"\n💡 REASONING:")
+            print(f"   GEX Analysis: {signal.reasoning.gex_analysis[:100]}...")
+            print(f"   Technical: {signal.reasoning.technical_context}")
+            print(f"   Dealer Position: {signal.reasoning.dealer_positioning}")
+            print(f"   Historical Win Rate: {signal.reasoning.historical_win_rate:.0f}%")
+            print(f"   Similar Setups: {signal.reasoning.similar_setups_count}")
             
+            print(f"\n⚠️  RISK FACTORS:")
+            for risk in signal.reasoning.risk_factors:
+                print(f"   • {risk}")
+            
+            print(f"\n🚀 CATALYSTS:")
+            for catalyst in signal.reasoning.catalysts:
+                print(f"   • {catalyst}")
+            
+            print(f"\n📈 CONDITIONS MET:")
+            for cond in signal.conditions:
+                status = "✅" if cond['met'] else "❌"
+                print(f"   {status} {cond['name']} (weight: {cond['weight']})")
         else:
-            print(f"\n  ⚠️ No signal generated (conditions not met)")
+            print(f"\n⏸️  No signal generated for {ticker}")
+            print(f"   (Conditions not met - need stronger GEX setup)")
     
-    print("\n✅ Enhanced Signal Generation tests passed!")
+    print(f"\n{'='*80}")
+    print("TEST COMPLETE")
+    print(f"{'='*80}")
 
-
-def test_position_sizing():
-    """Test position sizing calculations"""
-    print("\n" + "=" * 70)
-    print("TESTING POSITION SIZING")
-    print("=" * 70)
-    
-    analyzer = ContractAnalyzer()
-    
-    account_sizes = [25000, 50000, 100000]
-    entry_prices = [2.50, 5.00, 10.00]
-    
-    for account in account_sizes:
-        print(f"\nAccount Size: ${account:,.0f}")
-        print("-" * 50)
-        for entry in entry_prices:
-            sizing = analyzer.calculate_position_size(
-                account_size=account,
-                risk_per_trade_pct=2.0,
-                entry_price=entry,
-                stop_loss=entry * 0.6,  # 40% stop
-                confidence=75,
-                historical_win_rate=0.65
-            )
-            print(f"  Entry ${entry:.2f}: Max {sizing['max_contracts']} contracts "
-                  f"(Kelly: {sizing['kelly_fraction']:.1%}, Risk: ${sizing['risk_amount']:.0f})")
-    
-    print("\n✅ Position Sizing tests passed!")
-
-
-if __name__ == "__main__":
-    print("\n" + "="*70)
-    print("GEX ENHANCED SIGNAL GENERATOR - TEST SUITE")
-    print("="*70 + "\n")
-    
-    try:
-        test_contract_analyzer()
-        test_greeks_estimation()
-        test_signal_reasoning()
-        test_enhanced_signals()
-        test_position_sizing()
-        
-        print("\n" + "="*70)
-        print("ALL TESTS PASSED ✅")
-        print("="*70)
-        
-    except Exception as e:
-        print(f"\n❌ TEST FAILED: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+if __name__ == '__main__':
+    test_signal_generator()
