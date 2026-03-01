@@ -1,0 +1,19 @@
+2026-02-26 06:15:00,903 [INFO] 🔍 Alert watch mode started (interval: 30s)
+Traceback (most recent call last):
+  File "/Users/Honeybot/.openclaw/workspace/trading/alert_system.py", line 186, in <module>
+    main()
+    ~~~~^^
+  File "/Users/Honeybot/.openclaw/workspace/trading/alert_system.py", line 169, in main
+    signals = get_recent_signals(minutes=5)
+  File "/Users/Honeybot/.openclaw/workspace/trading/alert_system.py", line 29, in get_recent_signals
+    cursor.execute("""
+    ~~~~~~~~~~~~~~^^^^
+        SELECT * FROM momentum_signals
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE timestamp > ? AND signal_type = 'MOMENTUM_BREAKOUT'
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ORDER BY timestamp DESC
+        ^^^^^^^^^^^^^^^^^^^^^^^
+    """, (since,))
+    ^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: momentum_signals

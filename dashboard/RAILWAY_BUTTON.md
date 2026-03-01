@@ -1,0 +1,1 @@
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/R_TEMPLATE_ID?envs=POLYGON_API_KEY,SUPABASE_URL,SUPABASE_ANON_KEY&envs=POLYGON_API_KEY,SUPABASE_URL,SUPABASE_ANON_KEY&referralCode=HONEYBOT)
