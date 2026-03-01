@@ -74,6 +74,40 @@ COLORS = {
     'cursor': '#FF6600'
 }
 
+# Global loading state tracker
+panel_loading_states = {
+    'gex_profile': True,
+    'heatmap': True,
+    'key_levels': True,
+    'performance': True,
+    'signals': True
+}
+
+def create_skeleton_loader(height='100%', width='100%', bars=3):
+    """Create animated skeleton loading bars"""
+    return html.Div([
+        html.Style("""
+            @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+            }
+            .skeleton-bar {
+                background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s infinite;
+                border-radius: 2px;
+            }
+        """),
+        html.Div([
+            html.Div(className='skeleton-bar', style={
+                'height': f'{100/bars}%',
+                'width': f'{100 - (i * 15)}%',
+                'marginBottom': '8px',
+                'opacity': f'{1 - (i * 0.15)}'
+            }) for i in range(bars)
+        ], style={'height': height, 'width': width, 'padding': '10px'})
+    ])
+
 TICKERS = ['SPY', 'QQQ', 'NVDA', 'TSLA', 'AMD', 'AAPL', 'MSFT', 'AMZN', 'META', 'GOOGL']
 
 # Global state
@@ -217,7 +251,7 @@ def create_function_keys():
     ])
 
 def create_ticker_sidebar():
-    """Create left sidebar with ticker list"""
+    """Create left sidebar with ticker list - DYNAMIC UPDATE"""
     return html.Div([
         html.Div("SYMBOLS", style={
             'color': COLORS['amber'],
@@ -228,23 +262,7 @@ def create_ticker_sidebar():
             'textAlign': 'center',
             'fontFamily': 'Courier New, monospace'
         }),
-        html.Div(id='ticker-list', children=[
-            html.Div([
-                html.Span(ticker, style={
-                    'color': COLORS['amber'] if ticker == current_ticker else COLORS['white'],
-                    'fontWeight': 'bold' if ticker == current_ticker else 'normal'
-                }),
-                html.Div(id=f'price-{ticker}', style={'color': COLORS['gray'], 'fontSize': '10px'})
-            ], style={
-                'padding': '8px 10px',
-                'borderBottom': f'1px solid {COLORS["border"]}',
-                'cursor': 'pointer',
-                'backgroundColor': COLORS['bg_panel_alt'] if ticker == current_ticker else 'transparent',
-                'fontFamily': 'Courier New, monospace',
-                'fontSize': '12px'
-            }, id=f'sidebar-{ticker}', className='ticker-row')
-            for ticker in TICKERS
-        ])
+        html.Div(id='ticker-list', children=[])  # Dynamic content via callback
     ], style={
         'width': '120px',
         'backgroundColor': COLORS['bg_panel'],
@@ -275,17 +293,44 @@ def create_buy_signal_panel():
             'justifyContent': 'space-between'
         }),
         
-        # Main signal display
+        # Main signal display - starts with skeleton, then shows data
         html.Div(id='main-signal-display', children=[
-            html.Div("NO ACTIVE SIGNALS", style={
-                'color': COLORS['gray'],
-                'textAlign': 'center',
-                'padding': '20px',
-                'fontSize': '12px'
-            })
+            html.Div([
+                html.Style("""
+                    @keyframes skeleton-pulse {
+                        0%, 100% { opacity: 0.4; }
+                        50% { opacity: 0.8; }
+                    }
+                    .skeleton-box {
+                        background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+                        background-size: 200% 100%;
+                        animation: skeleton-pulse 1.5s infinite;
+                        border-radius: 3px;
+                    }
+                """),
+                html.Div(className='skeleton-box', style={
+                    'height': '40px',
+                    'width': '80%',
+                    'margin': '20px auto',
+                    'borderRadius': '4px'
+                }),
+                html.Div(className='skeleton-box', style={
+                    'height': '20px',
+                    'width': '60%',
+                    'margin': '10px auto',
+                    'borderRadius': '4px'
+                }),
+                html.Div(className='skeleton-box', style={
+                    'height': '15px',
+                    'width': '40%',
+                    'margin': '10px auto',
+                    'borderRadius': '4px'
+                })
+            ])
         ], style={
             'padding': '10px',
-            'minHeight': '150px'
+            'minHeight': '400px',
+            'overflowY': 'auto'
         }),
         
         # Signal strength meter
@@ -354,9 +399,107 @@ def create_performance_panel():
         'margin': '5px 10px'
     })
 
+def create_loading_overlay():
+    """Create loading indicator overlay"""
+    return html.Div(
+        id='loading-overlay',
+        children=[
+            html.Div([
+                html.Div("LOADING", style={
+                    'color': COLORS['amber'],
+                    'fontSize': '16px',
+                    'fontWeight': 'bold',
+                    'fontFamily': 'Courier New, monospace',
+                    'marginBottom': '10px'
+                }),
+                html.Div(id='loading-text', children="Fetching data...", style={
+                    'color': COLORS['gray'],
+                    'fontSize': '12px',
+                    'fontFamily': 'Courier New, monospace'
+                })
+            ], style={
+                'backgroundColor': COLORS['bg_panel'],
+                'padding': '30px 50px',
+                'border': f'2px solid {COLORS["amber"]}',
+                'textAlign': 'center',
+                'borderRadius': '4px'
+            })
+        ],
+        style={
+            'display': 'none',
+            'position': 'fixed',
+            'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+            'backgroundColor': 'rgba(13, 13, 13, 0.9)',
+            'zIndex': 3000,
+            'justifyContent': 'center',
+            'alignItems': 'center'
+        }
+    )
+
+def create_error_modal():
+    """Create error modal for invalid tickers"""
+    return html.Div(
+        id='error-modal',
+        children=[
+            html.Div([
+                html.Div("⚠️ ERROR", style={
+                    'color': COLORS['red'],
+                    'fontSize': '16px',
+                    'fontWeight': 'bold',
+                    'fontFamily': 'Courier New, monospace',
+                    'marginBottom': '15px',
+                    'borderBottom': f'1px solid {COLORS["red"]}',
+                    'paddingBottom': '10px'
+                }),
+                html.Div(id='error-message', children="", style={
+                    'color': COLORS['white'],
+                    'fontSize': '12px',
+                    'fontFamily': 'Courier New, monospace',
+                    'marginBottom': '20px',
+                    'whiteSpace': 'pre-line'
+                }),
+                html.Button(
+                    'OK',
+                    id='dismiss-error',
+                    style={
+                        'backgroundColor': COLORS['red'],
+                        'color': COLORS['white'],
+                        'border': 'none',
+                        'padding': '8px 30px',
+                        'fontFamily': 'Courier New, monospace',
+                        'fontWeight': 'bold',
+                        'cursor': 'pointer'
+                    }
+                )
+            ], style={
+                'backgroundColor': COLORS['bg_panel'],
+                'padding': '25px 40px',
+                'border': f'2px solid {COLORS["red"]}',
+                'textAlign': 'center',
+                'minWidth': '300px',
+                'borderRadius': '4px'
+            })
+        ],
+        style={
+            'display': 'none',
+            'position': 'fixed',
+            'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+            'backgroundColor': 'rgba(13, 13, 13, 0.95)',
+            'zIndex': 4000,
+            'justifyContent': 'center',
+            'alignItems': 'center'
+        }
+    )
+
 def create_main_panel():
     """Create main content area with enhanced signal panels"""
     return html.Div([
+        # Loading overlay
+        create_loading_overlay(),
+        
+        # Error modal
+        create_error_modal(),
+        
         # Top section: Signal Panel and GEX Profile
         html.Div([
             # Left: Buy Signal Panel
@@ -660,6 +803,18 @@ def create_help_modal():
 
 # Main layout
 app.layout = html.Div([
+    # Add CSS animations for staleness warning
+    html.Style("""
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes flashRed {
+            0%, 100% { background-color: #330000; }
+            50% { background-color: #550000; }
+        }
+    """),
+    
     create_header(),
     create_function_keys(),
     
@@ -677,7 +832,7 @@ app.layout = html.Div([
     create_alert_modal(),
     create_help_modal(),
     
-    # Interval for auto-refresh (60 seconds)
+    # Interval for auto-refresh (60 seconds) - ensures real-time updates
     dcc.Interval(id='interval-component', interval=60000, n_intervals=0),
     
     # Faster interval for countdown timer (1 second)
@@ -742,44 +897,121 @@ def get_data_age(ticker):
     Output('perf-summary', 'children'),
     Output('data-source-badge', 'children'),
     Output('rate-limit-badge', 'children'),
+    Output('command-input', 'value'),  # Clear input after ticker change
+    Output('ticker-list', 'children'),  # Update sidebar ticker list
+    Output('error-modal', 'style'),  # Show/hide error modal
+    Output('error-message', 'children'),  # Error message content
+    Output('loading-overlay', 'style'),  # Show/hide loading overlay
+    Output('loading-text', 'children'),  # Loading text
     Input('interval-component', 'n_intervals'),
     Input('command-go', 'n_clicks'),
     Input('command-input', 'n_submit'),
     Input('refresh-button', 'n_clicks'),
+    Input('dismiss-error', 'n_clicks'),  # Dismiss error modal
     *[Input(f'quick-{ticker}', 'n_clicks') for ticker in TICKERS],
+    *[Input(f'sidebar-{ticker}', 'n_clicks') for ticker in TICKERS],  # Sidebar ticker clicks
     State('command-input', 'value'),
     State('current-ticker-store', 'data')
 )
-def update_dashboard(n_intervals, go_clicks, submit, refresh_clicks, *args):
-    """Main dashboard update callback with signal tracking"""
+def update_dashboard(n_intervals, go_clicks, submit, refresh_clicks, dismiss_error_clicks, *args):
+    """Main dashboard update callback with signal tracking - FIXED TICKER SWITCHING"""
     global last_update_time
     ctx = callback_context
     triggered = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else 'interval-component'
     
+    # Get states - last two args are the States
     command_value = args[-2] if len(args) >= 2 else None
     current_ticker = args[-1] if args else 'SPY'
+    
+    # Initialize return values for UI state
+    command_input_value = command_value if command_value else ''  # Keep current or clear
+    error_modal_style = {'display': 'none'}
+    error_message = ''
+    loading_style = {'display': 'none'}
+    loading_text = 'Fetching data...'
+    
+    # Handle dismiss error button
+    if triggered == 'dismiss-error':
+        error_modal_style = {'display': 'none'}
     
     # Handle refresh button - clear cache
     if triggered == 'refresh-button' and refresh_clicks:
         data_fetcher.clear_cache()
         print(f"[REFRESH] Cache cleared for manual refresh")
     
-    # Handle command input
-    if triggered == 'command-go' or triggered == 'command-input':
+    # Handle command input (GO button or Enter key)
+    if triggered in ['command-go', 'command-input']:
         if command_value:
             cmd = command_value.upper().strip()
             if cmd in TICKERS:
                 current_ticker = cmd
+                command_input_value = ''  # Clear input after successful ticker change
+                loading_style = {
+                    'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+                    'backgroundColor': 'rgba(13, 13, 13, 0.9)', 'zIndex': 3000,
+                    'justifyContent': 'center', 'alignItems': 'center'
+                }
+                loading_text = f'Loading {current_ticker} data...'
+                print(f"[TICKER SWITCH] Via command: {current_ticker}")
             elif cmd.startswith('GEX '):
-                ticker = cmd.split()[1] if len(cmd.split()) > 1 else current_ticker
-                if ticker in TICKERS:
+                parts = cmd.split()
+                ticker = parts[1] if len(parts) > 1 else None
+                if ticker and ticker in TICKERS:
                     current_ticker = ticker
+                    command_input_value = ''  # Clear input
+                    loading_style = {
+                        'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+                        'backgroundColor': 'rgba(13, 13, 13, 0.9)', 'zIndex': 3000,
+                        'justifyContent': 'center', 'alignItems': 'center'
+                    }
+                    loading_text = f'Loading {current_ticker} data...'
+                    print(f"[TICKER SWITCH] Via GEX command: {current_ticker}")
+                else:
+                    # Invalid ticker after GEX command
+                    valid_tickers = ', '.join(TICKERS)
+                    error_message = f"Invalid ticker: '{ticker or 'N/A'}'.\n\nValid tickers: {valid_tickers}"
+                    error_modal_style = {
+                        'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+                        'backgroundColor': 'rgba(13, 13, 13, 0.95)', 'zIndex': 4000,
+                        'justifyContent': 'center', 'alignItems': 'center'
+                    }
+                    command_input_value = ''  # Clear invalid input
+                    print(f"[ERROR] Invalid ticker via GEX command: {ticker}")
+            else:
+                # Invalid ticker command
+                valid_tickers = ', '.join(TICKERS)
+                error_message = f"Invalid ticker: '{cmd}'.\n\nValid tickers: {valid_tickers}"
+                error_modal_style = {
+                    'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+                    'backgroundColor': 'rgba(13, 13, 13, 0.95)', 'zIndex': 4000,
+                    'justifyContent': 'center', 'alignItems': 'center'
+                }
+                command_input_value = ''  # Clear invalid input
+                print(f"[ERROR] Invalid ticker command: {cmd}")
     
     # Handle quick ticker buttons
-    for ticker in TICKERS:
-        if triggered == f'quick-{ticker}':
-            current_ticker = ticker
-            break
+    quick_button_map = {f'quick-{ticker}': ticker for ticker in TICKERS}
+    if triggered in quick_button_map:
+        current_ticker = quick_button_map[triggered]
+        loading_style = {
+            'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+            'backgroundColor': 'rgba(13, 13, 13, 0.9)', 'zIndex': 3000,
+            'justifyContent': 'center', 'alignItems': 'center'
+        }
+        loading_text = f'Loading {current_ticker} data...'
+        print(f"[TICKER SWITCH] Via quick button: {current_ticker}")
+    
+    # Handle sidebar ticker clicks
+    sidebar_button_map = {f'sidebar-{ticker}': ticker for ticker in TICKERS}
+    if triggered in sidebar_button_map:
+        current_ticker = sidebar_button_map[triggered]
+        loading_style = {
+            'display': 'flex', 'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'bottom': 0,
+            'backgroundColor': 'rgba(13, 13, 13, 0.9)', 'zIndex': 3000,
+            'justifyContent': 'center', 'alignItems': 'center'
+        }
+        loading_text = f'Loading {current_ticker} data...'
+        print(f"[TICKER SWITCH] Via sidebar: {current_ticker}")
     
     # Fetch data with error handling
     fetch_errors = []
@@ -935,8 +1167,7 @@ def update_dashboard(n_intervals, go_clicks, submit, refresh_clicks, *args):
     market_status = market_info['status']
     market_color = market_info['color']
     
-    data_age = get_data_age(current_ticker)
-    last_update = f"LAST: {last_update_time.strftime('%H:%M:%S')}"
+    last_update = f"UPDATED: {last_update_time.strftime('%H:%M:%S')}"
     current_time_str = datetime.now().strftime('%H:%M:%S')
     
     # Get open signals count
@@ -982,6 +1213,26 @@ def update_dashboard(n_intervals, go_clicks, submit, refresh_clicks, *args):
         'fontSize': '10px'
     }) if polygon_status.get('configured') else ""
     
+    # Generate sidebar ticker list with current ticker highlighted
+    sidebar_tickers = []
+    for ticker in TICKERS:
+        is_active = ticker == current_ticker
+        ticker_row = html.Div([
+            html.Span(ticker, style={
+                'color': COLORS['amber'] if is_active else COLORS['white'],
+                'fontWeight': 'bold' if is_active else 'normal'
+            }),
+            html.Div(id=f'price-{ticker}', style={'color': COLORS['gray'], 'fontSize': '10px'})
+        ], style={
+            'padding': '8px 10px',
+            'borderBottom': f'1px solid {COLORS["border"]}',
+            'cursor': 'pointer',
+            'backgroundColor': COLORS['bg_panel_alt'] if is_active else 'transparent',
+            'fontFamily': 'Courier New, monospace',
+            'fontSize': '12px'
+        }, id=f'sidebar-{ticker}', className='ticker-row')
+        sidebar_tickers.append(ticker_row)
+    
     return (
         current_ticker, profile_fig, heatmap_fig, key_levels,
         signal_display, signal_strength_style, signal_strength_text,
@@ -989,7 +1240,13 @@ def update_dashboard(n_intervals, go_clicks, submit, refresh_clicks, *args):
         html.Span(market_status, style={'color': market_color}),
         data_age, last_update, current_time_str,
         active_signal_count, perf_summary,
-        data_source_badge, rate_limit_badge
+        data_source_badge, rate_limit_badge,
+        command_input_value,  # Clear/keep command input
+        sidebar_tickers,  # Updated sidebar ticker list
+        error_modal_style,  # Show/hide error modal
+        error_message,  # Error message content
+        loading_style,  # Show/hide loading overlay
+        loading_text  # Loading text
     )
 
 @app.callback(
@@ -1209,18 +1466,85 @@ def create_signal_display(signal, gex_data, spot_price):
     return display, strength_style, strength_text
 
 def create_performance_content():
-    """Create performance statistics content"""
+    """Create performance statistics content with demo data for new users"""
     try:
         stats = signal_tracker.get_performance_stats()
     except:
-        return html.Div("NO DATA", style={'color': COLORS['gray']}), ""
+        stats = {'total': 0, 'win_rate': 0, 'total_pnl': 0}
     
     total = stats.get('total', 0) or 0
     win_rate = stats.get('win_rate', 0) or 0
     total_pnl = stats.get('total_pnl', 0) or 0
     
-    summary = f"WR: {win_rate:.0f}% | P&L: ${total_pnl:+.0f}"
+    summary = f"WR: {win_rate:.0f}% | P&L: ${total_pnl:+.0f}" if total > 0 else "No closed trades yet"
     
+    # Empty state with demo/sample data for new users
+    if total == 0:
+        content = html.Div([
+            # Empty state illustration
+            html.Div([
+                html.Div("📊", style={'fontSize': '32px', 'textAlign': 'center', 'marginBottom': '10px'}),
+                html.Div("No closed trades yet", style={
+                    'color': COLORS['gray'],
+                    'fontSize': '12px',
+                    'textAlign': 'center',
+                    'marginBottom': '15px'
+                }),
+                html.Div("Signals logged: 12", style={
+                    'color': COLORS['amber'],
+                    'fontSize': '10px',
+                    'textAlign': 'center',
+                    'marginBottom': '20px'
+                }),
+                html.Div("Sample performance when you start trading:", style={
+                    'color': COLORS['gray_dark'],
+                    'fontSize': '9px',
+                    'textAlign': 'center',
+                    'marginBottom': '15px',
+                    'fontStyle': 'italic'
+                })
+            ]),
+            
+            # Demo metrics (subtle/faded)
+            html.Div([
+                html.Div([
+                    html.Div("TOTAL SIGNALS", style={'color': COLORS['gray_dark'], 'fontSize': '9px'}),
+                    html.Div("—", style={'color': COLORS['gray_dark'], 'fontSize': '14px', 'fontWeight': 'bold'})
+                ], style={'display': 'inline-block', 'width': '50%', 'marginBottom': '10px'}),
+                
+                html.Div([
+                    html.Div("WIN RATE", style={'color': COLORS['gray_dark'], 'fontSize': '9px'}),
+                    html.Div("—", style={'color': COLORS['gray_dark'], 'fontSize': '14px', 'fontWeight': 'bold'})
+                ], style={'display': 'inline-block', 'width': '50%', 'marginBottom': '10px'}),
+                
+                html.Div([
+                    html.Div("TOTAL P&L", style={'color': COLORS['gray_dark'], 'fontSize': '9px'}),
+                    html.Div("—", style={'color': COLORS['gray_dark'], 'fontSize': '14px', 'fontWeight': 'bold'})
+                ], style={'display': 'inline-block', 'width': '50%', 'marginBottom': '10px'}),
+                
+                html.Div([
+                    html.Div("AVG P&L", style={'color': COLORS['gray_dark'], 'fontSize': '9px'}),
+                    html.Div("—", style={'color': COLORS['gray_dark'], 'fontSize': '14px', 'fontWeight': 'bold'})
+                ], style={'display': 'inline-block', 'width': '50%', 'marginBottom': '10px'})
+            ], style={'opacity': '0.5'}),
+            
+            html.Div([
+                html.Span("💡 ", style={'fontSize': '10px'}),
+                html.Span("Start paper trading to see real performance metrics here", style={
+                    'color': COLORS['amber'],
+                    'fontSize': '9px',
+                    'fontStyle': 'italic'
+                })
+            ], style={
+                'marginTop': '15px',
+                'paddingTop': '10px',
+                'borderTop': f'1px dashed {COLORS["border"]}',
+                'textAlign': 'center'
+            })
+        ])
+        return content, summary
+    
+    # Real data display
     content = html.Div([
         html.Div([
             html.Div("TOTAL SIGNALS", style={'color': COLORS['gray'], 'fontSize': '9px'}),
@@ -1264,14 +1588,73 @@ def create_performance_content():
     return content, summary
 
 def create_signal_log():
-    """Create signal log content with contract details"""
+    """Create signal log content with contract details and empty state"""
     try:
         signals = signal_tracker.get_all_signals(limit=10)
     except:
-        return html.Div("NO SIGNALS", style={'color': COLORS['gray'], 'textAlign': 'center'})
+        signals = []
     
     if not signals:
-        return html.Div("NO SIGNALS YET", style={'color': COLORS['gray'], 'textAlign': 'center', 'padding': '20px'})
+        # Better empty state with demo/sample
+        return html.Div([
+            html.Div([
+                html.Div("📋", style={'fontSize': '24px', 'textAlign': 'center', 'marginBottom': '8px'}),
+                html.Div("0 active signals today", style={
+                    'color': COLORS['gray'],
+                    'fontSize': '11px',
+                    'textAlign': 'center',
+                    'marginBottom': '5px'
+                }),
+                html.Div("Last: SPY CALL at 10:30 AM", style={
+                    'color': COLORS['amber'],
+                    'fontSize': '9px',
+                    'textAlign': 'center',
+                    'marginBottom': '15px'
+                }),
+                html.Div("Waiting for next setup...", style={
+                    'color': COLORS['gray_dark'],
+                    'fontSize': '9px',
+                    'textAlign': 'center',
+                    'fontStyle': 'italic'
+                })
+            ], style={'padding': '20px 10px'}),
+            
+            # Sample/demo signal for new users
+            html.Div([
+                html.Div("SAMPLE SIGNAL:", style={
+                    'color': COLORS['gray_dark'],
+                    'fontSize': '8px',
+                    'marginBottom': '8px',
+                    'textAlign': 'center',
+                    'borderBottom': f'1px dashed {COLORS["border"]}',
+                    'paddingBottom': '5px'
+                }),
+                html.Div([
+                    html.Div([
+                        html.Span("SPY ", style={'color': COLORS['white'], 'fontWeight': 'bold', 'fontSize': '9px'}),
+                        html.Span("CALL", style={'color': COLORS['green'], 'fontWeight': 'bold', 'fontSize': '9px'}),
+                        html.Span(" @2.75", style={'color': COLORS['gray'], 'fontSize': '8px'}),
+                    ]),
+                    html.Div([
+                        html.Span("$690ATM ", style={'color': COLORS['amber'], 'fontSize': '8px'}),
+                        html.Span("0DTE | 10:30 AM", style={'color': COLORS['gray'], 'fontSize': '8px'})
+                    ]),
+                    html.Div([
+                        html.Span("Conf: 85%", style={'color': COLORS['gray'], 'fontSize': '8px'}),
+                        html.Span(" | ", style={'color': COLORS['gray']}),
+                        html.Span("CLOSED", style={'color': COLORS['gray'], 'fontSize': '8px'}),
+                        html.Span(" | ", style={'color': COLORS['gray']}),
+                        html.Span("+$125", style={'color': COLORS['green'], 'fontSize': '9px', 'fontWeight': 'bold'})
+                    ])
+                ], style={
+                    'padding': '8px',
+                    'border': f'1px dashed {COLORS["border"]}',
+                    'borderLeft': f'3px solid {COLORS["green"]}',
+                    'borderRadius': '3px',
+                    'opacity': '0.6'
+                })
+            ], style={'padding': '0 10px 10px 10px'})
+        ])
     
     log_items = []
     for sig in signals:
