@@ -1,0 +1,401 @@
+/* Bloomberg Terminal Style CSS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #0d0d0d;
+    color: #FF6600;
+    font-family: 'Courier New', 'Courier', monospace;
+    overflow: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #FF6600;
+    border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #FF8800;
+}
+
+::-webkit-scrollbar-corner {
+    background: #1a1a1a;
+}
+
+/* Selection styling */
+::selection {
+    background-color: #FF6600;
+    color: #0d0d0d;
+}
+
+/* Input styling */
+input, select, textarea {
+    font-family: 'Courier New', monospace;
+    background-color: #0d0d0d;
+    color: #FF6600;
+    border: 1px solid #333333;
+    padding: 4px 8px;
+    outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #FF6600;
+    box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+}
+
+/* Button styling */
+button {
+    font-family: 'Courier New', monospace;
+    background-color: #FF6600;
+    color: #0d0d0d;
+    border: none;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.1s;
+}
+
+button:hover {
+    background-color: #FF8800;
+}
+
+button:active {
+    background-color: #CC5200;
+}
+
+button.secondary {
+    background-color: #1a1a1a;
+    color: #FF6600;
+    border: 1px solid #FF6600;
+}
+
+button.secondary:hover {
+    background-color: #FF6600;
+    color: #0d0d0d;
+}
+
+/* Panel styling */
+.panel {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+}
+
+.panel-header {
+    background-color: #141414;
+    border-bottom: 1px solid #333333;
+    padding: 5px 10px;
+    color: #FF6600;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Ticker row styling */
+.ticker-row {
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.ticker-row:hover {
+    background-color: #262626 !important;
+}
+
+.ticker-row.active {
+    background-color: #FF6600 !important;
+    color: #0d0d0d !important;
+}
+
+.ticker-row.active span {
+    color: #0d0d0d !important;
+}
+
+/* Alert styling */
+.alert-critical {
+    animation: flash-red 1s ease-in-out infinite;
+}
+
+.alert-warning {
+    animation: flash-amber 2s ease-in-out infinite;
+}
+
+@keyframes flash-red {
+    0%, 100% { 
+        background-color: #1a1a1a;
+        border-left-color: #FF0000;
+    }
+    50% { 
+        background-color: rgba(255, 0, 0, 0.2);
+        border-left-color: #FF6666;
+    }
+}
+
+@keyframes flash-amber {
+    0%, 100% { 
+        background-color: #1a1a1a;
+        border-left-color: #FF6600;
+    }
+    50% { 
+        background-color: rgba(255, 102, 0, 0.2);
+        border-left-color: #FF8800;
+    }
+}
+
+/* Ticker tape animation */
+@keyframes scroll-left {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.ticker-tape {
+    animation: scroll-left 30s linear infinite;
+    white-space: nowrap;
+}
+
+.ticker-tape:hover {
+    animation-play-state: paused;
+}
+
+/* Cursor blink */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.cursor {
+    animation: blink 1s step-end infinite;
+}
+
+/* Plotly chart overrides */
+.js-plotly-plot .plotly .main-svg {
+    background-color: transparent !important;
+}
+
+.js-plotly-plot .plotly .gtitle {
+    font-family: 'Courier New', monospace !important;
+    color: #FF6600 !important;
+}
+
+.js-plotly-plot .plotly .g-xtitle,
+.js-plotly-plot .plotly .g-ytitle {
+    font-family: 'Courier New', monospace !important;
+    fill: #FF6600 !important;
+}
+
+.js-plotly-plot .plotly .g-xaxis .tick text,
+.js-plotly-plot .plotly .g-yaxis .tick text {
+    font-family: 'Courier New', monospace !important;
+    fill: #808080 !important;
+}
+
+.js-plotly-plot .plotly .gridlayer path {
+    stroke: #333333 !important;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+th {
+    color: #FF6600;
+    border-bottom: 2px solid #FF6600;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: bold;
+}
+
+td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #333333;
+}
+
+tr:hover td {
+    background-color: #262626;
+}
+
+/* Terminal text colors */
+.text-amber { color: #FF6600; }
+.text-amber-bright { color: #FF8800; }
+.text-yellow { color: #FFFF00; }
+.text-green { color: #00FF00; }
+.text-red { color: #FF0000; }
+.text-white { color: #FFFFFF; }
+.text-gray { color: #808080; }
+
+/* Background colors */
+.bg-terminal { background-color: #0d0d0d; }
+.bg-panel { background-color: #1a1a1a; }
+.bg-panel-alt { background-color: #141414; }
+
+/* Border colors */
+.border-amber { border-color: #FF6600; }
+.border-gray { border-color: #333333; }
+
+/* Status indicators */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.status-dot.green { background-color: #00FF00; }
+.status-dot.amber { background-color: #FF6600; }
+.status-dot.red { background-color: #FF0000; }
+.status-dot.gray { background-color: #808080; }
+
+/* Loading spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spinner {
+    border: 2px solid #333333;
+    border-top: 2px solid #FF6600;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #1a1a1a;
+    border: 2px solid #FF6600;
+    padding: 20px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Command line styling */
+.command-line {
+    display: flex;
+    align-items: center;
+    background-color: #141414;
+    padding: 5px 10px;
+    border-bottom: 1px solid #333333;
+}
+
+.command-prompt {
+    color: #FF6600;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.command-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #FF6600;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    outline: none;
+}
+
+/* Function key bar */
+.fkey-bar {
+    display: flex;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333333;
+    overflow-x: auto;
+}
+
+.fkey {
+    padding: 4px 12px;
+    border-right: 1px solid #333333;
+    font-size: 10px;
+    color: #FF6600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fkey:hover {
+    background-color: #262626;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 11px;
+    }
+    
+    .fkey-bar {
+        display: none;
+    }
+    
+    .panel {
+        margin-bottom: 10px;
+    }
+}
+/* Signal Animation Keyframes */
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-color: #FF6600; }
+    50% { border-color: #FFFF00; }
+}
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.signal-flash {
+    animation: flash 1s ease-in-out infinite;
+}
+
+.signal-active {
+    border: 2px solid #00FF00;
+    animation: pulse-border 2s ease-in-out infinite;
+}
+
+.signal-put {
+    border: 2px solid #FF0000;
+    animation: pulse-border 2s ease-in-out infinite;
+}
