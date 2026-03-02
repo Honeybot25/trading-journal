@@ -3,6 +3,7 @@ Data Fetcher Module
 Fetches real-time market data from Polygon.io (primary) with yfinance fallback
 """
 
+import os
 import yfinance as yf
 import pandas as pd
 import numpy as np

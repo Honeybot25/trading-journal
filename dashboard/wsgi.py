@@ -44,6 +44,51 @@ try:
         except Exception as e:
             return {'error': str(e), 'signals': []}, 500
     
+    # Add seed endpoint for demo signals
+    @server.route('/api/seed')
+    def seed_demo():
+        try:
+            from signal_tracker import SignalTracker
+            from demo_data import get_demo_generator
+            from datetime import datetime, timedelta
+            
+            tracker = SignalTracker()
+            demo = get_demo_generator()
+            
+            # Generate demo signals
+            tickers = ['SPY', 'QQQ', 'NVDA', 'TSLA']
+            created = []
+            
+            for ticker in tickers:
+                signal_data = demo.generate_demo_signal(ticker)
+                if signal_data['direction'] != 'NEUTRAL':
+                    signal_id = tracker.log_signal(signal_data)
+                    created.append({'ticker': ticker, 'direction': signal_data['direction'], 'id': signal_id})
+            
+            # Add one closed signal
+            closed_signal = demo.generate_demo_signal('SPY')
+            closed_signal['status'] = 'CLOSED'
+            closed_signal['exit_price'] = closed_signal['entry_price'] * 1.08
+            closed_signal['exit_time'] = (datetime.now() - timedelta(hours=2)).isoformat()
+            closed_signal['exit_reason'] = 'TP_HIT'
+            closed_signal['pnl'] = (closed_signal['exit_price'] - closed_signal['entry_price']) * 100
+            closed_signal['pnl_percent'] = 8.0
+            
+            closed_id = tracker.log_signal(closed_signal)
+            tracker.update_signal_exit(closed_id, {
+                'exit_price': closed_signal['exit_price'],
+                'exit_reason': 'TP_HIT',
+                'pnl': closed_signal['pnl'],
+                'pnl_percent': closed_signal['pnl_percent'],
+                'notes': 'Demo take profit hit'
+            })
+            created.append({'ticker': 'SPY', 'direction': closed_signal['direction'], 'id': closed_id, 'status': 'CLOSED'})
+            
+            return {'success': True, 'created': created, 'count': len(created)}, 200
+        except Exception as e:
+            import traceback
+            return {'error': str(e), 'traceback': traceback.format_exc()}, 500
+    
 except Exception as e:
     # Log the error for debugging
     error_msg = f"Error loading app: {str(e)}\n{traceback.format_exc()}"

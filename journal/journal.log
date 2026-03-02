@@ -1745,3 +1745,193 @@
 2026-03-02 08:02:24,994 - gex_scanner - INFO - Signals generated: 0
 2026-03-02 08:02:24,994 - gex_scanner - INFO - ============================================================
 
+2026-03-02 09:03:17,960 - journal - INFO - Trading journal database initialized at /Users/Honeybot/.openclaw/workspace/trading/journal/trading_journal.db
+2026-03-02 09:03:17,961 - gex_scanner - INFO - Signal database initialized at /Users/Honeybot/.openclaw/workspace/trading/signals.db
+2026-03-02 09:03:17,961 - gex_scanner - INFO - 
+============================================================
+2026-03-02 09:03:17,961 - gex_scanner - INFO - MULTI-TICKER GEX SCAN - 2026-03-02 09:03
+2026-03-02 09:03:17,961 - gex_scanner - INFO - Watchlist: SPY, QQQ, NVDA, TSLA, AMD, AAPL, MSFT, AMZN, META, GOOGL
+2026-03-02 09:03:17,961 - gex_scanner - INFO - ============================================================
+
+2026-03-02 09:03:17,961 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:17,961 - gex_scanner - INFO - Scanning SPY
+2026-03-02 09:03:17,961 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:18,371 - gex_scanner - INFO - Price: $685.95
+2026-03-02 09:03:18,716 - gex_scanner - INFO - Using expiration: 2026-03-03 (1 days)
+2026-03-02 09:03:18,743 - gex_scanner - INFO - Key GEX levels: [(675.0, '$1,543,579'), (686.0, '$376,734'), (685.0, '$329,528')]
+2026-03-02 09:03:18,749 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $376,734 at 686.0 - no clear signal
+2026-03-02 09:03:18,750 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:18,750 - gex_scanner - INFO - Scanning QQQ
+2026-03-02 09:03:18,750 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:18,877 - gex_scanner - INFO - Price: $607.29
+2026-03-02 09:03:19,111 - gex_scanner - INFO - Using expiration: 2026-03-03 (1 days)
+2026-03-02 09:03:19,128 - gex_scanner - INFO - Key GEX levels: [(608.0, '$336,869'), (607.0, '$129,503'), (605.0, '$112,002')]
+2026-03-02 09:03:19,133 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $129,503 at 607.0 - no clear signal
+2026-03-02 09:03:19,133 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:19,133 - gex_scanner - INFO - Scanning NVDA
+2026-03-02 09:03:19,133 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:19,323 - gex_scanner - INFO - Price: $182.30
+2026-03-02 09:03:19,522 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 09:03:19,530 - gex_scanner - INFO - Key GEX levels: [(185.0, '$276,732'), (180.0, '$178,117'), (190.0, '$77,680')]
+2026-03-02 09:03:19,533 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $178,117 at 180.0 - no clear signal
+2026-03-02 09:03:19,534 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:19,534 - gex_scanner - INFO - Scanning TSLA
+2026-03-02 09:03:19,534 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:19,641 - gex_scanner - INFO - Price: $402.97
+2026-03-02 09:03:19,878 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 09:03:19,883 - gex_scanner - INFO - Key GEX levels: [(405.0, '$54,870'), (410.0, '$54,758'), (400.0, '$40,726')]
+2026-03-02 09:03:19,884 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $54,870 at 405.0 - no clear signal
+2026-03-02 09:03:19,884 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:19,884 - gex_scanner - INFO - Scanning AMD
+2026-03-02 09:03:19,884 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:19,949 - gex_scanner - INFO - Price: $196.52
+2026-03-02 09:03:20,284 - gex_scanner - INFO - Using expiration: 2026-03-06 (4 days)
+2026-03-02 09:03:20,296 - gex_scanner - INFO - Key GEX levels: [(205.0, '$68,863'), (190.0, '$58,718'), (200.0, '$57,007')]
+2026-03-02 09:03:20,301 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $57,007 at 200.0 - no clear signal
+2026-03-02 09:03:20,301 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:20,302 - gex_scanner - INFO - Scanning AAPL
+2026-03-02 09:03:20,302 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:20,412 - gex_scanner - INFO - Price: $265.69
+2026-03-02 09:03:20,578 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 09:03:20,585 - gex_scanner - INFO - Key GEX levels: [(265.0, '$61,843'), (270.0, '$54,967'), (267.5, '$32,074')]
+2026-03-02 09:03:20,588 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $61,843 at 265.0 - no clear signal
+2026-03-02 09:03:20,588 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:20,588 - gex_scanner - INFO - Scanning MSFT
+2026-03-02 09:03:20,588 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:20,686 - gex_scanner - INFO - Price: $400.11
+2026-03-02 09:03:20,891 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 09:03:20,905 - gex_scanner - INFO - Key GEX levels: [(405.0, '$33,518'), (400.0, '$28,398'), (395.0, '$19,895')]
+2026-03-02 09:03:20,910 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $28,398 at 400.0 - no clear signal
+2026-03-02 09:03:20,910 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:20,910 - gex_scanner - INFO - Scanning AMZN
+2026-03-02 09:03:20,910 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:21,001 - gex_scanner - INFO - Price: $210.00
+2026-03-02 09:03:21,198 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 09:03:21,210 - gex_scanner - INFO - Key GEX levels: [(210.0, '$73,706'), (215.0, '$45,159'), (212.5, '$33,833')]
+2026-03-02 09:03:21,215 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $73,706 at 210.0 - no clear signal
+2026-03-02 09:03:21,216 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:21,216 - gex_scanner - INFO - Scanning META
+2026-03-02 09:03:21,216 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:21,356 - gex_scanner - INFO - Price: $658.35
+2026-03-02 09:03:21,577 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 09:03:21,584 - gex_scanner - INFO - Key GEX levels: [(660.0, '$19,416'), (655.0, '$7,525'), (665.0, '$4,326')]
+2026-03-02 09:03:21,586 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $19,416 at 660.0 - no clear signal
+2026-03-02 09:03:21,587 - gex_scanner - INFO - 
+==================================================
+2026-03-02 09:03:21,587 - gex_scanner - INFO - Scanning GOOGL
+2026-03-02 09:03:21,587 - gex_scanner - INFO - ==================================================
+2026-03-02 09:03:21,652 - gex_scanner - INFO - Price: $307.35
+2026-03-02 09:03:21,864 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 09:03:21,875 - gex_scanner - INFO - Key GEX levels: [(310.0, '$26,137'), (307.5, '$19,091'), (305.0, '$15,010')]
+2026-03-02 09:03:21,878 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $19,091 at 307.5 - no clear signal
+2026-03-02 09:03:21,879 - gex_scanner - INFO - 
+============================================================
+2026-03-02 09:03:21,879 - gex_scanner - INFO - SCAN COMPLETE
+2026-03-02 09:03:21,879 - gex_scanner - INFO - Total scanned: 10
+2026-03-02 09:03:21,879 - gex_scanner - INFO - Signals generated: 0
+2026-03-02 09:03:21,879 - gex_scanner - INFO - ============================================================
+
+2026-03-02 10:06:26,085 - journal - INFO - Trading journal database initialized at /Users/Honeybot/.openclaw/workspace/trading/journal/trading_journal.db
+2026-03-02 10:06:26,086 - gex_scanner - INFO - Signal database initialized at /Users/Honeybot/.openclaw/workspace/trading/signals.db
+2026-03-02 10:06:26,086 - gex_scanner - INFO - 
+============================================================
+2026-03-02 10:06:26,086 - gex_scanner - INFO - MULTI-TICKER GEX SCAN - 2026-03-02 10:06
+2026-03-02 10:06:26,086 - gex_scanner - INFO - Watchlist: SPY, QQQ, NVDA, TSLA, AMD, AAPL, MSFT, AMZN, META, GOOGL
+2026-03-02 10:06:26,086 - gex_scanner - INFO - ============================================================
+
+2026-03-02 10:06:26,086 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:26,086 - gex_scanner - INFO - Scanning SPY
+2026-03-02 10:06:26,086 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:26,645 - gex_scanner - INFO - Price: $687.11
+2026-03-02 10:06:26,921 - gex_scanner - INFO - Using expiration: 2026-03-03 (1 days)
+2026-03-02 10:06:26,947 - gex_scanner - INFO - Key GEX levels: [(675.0, '$1,002,811'), (686.0, '$352,898'), (685.0, '$292,076')]
+2026-03-02 10:06:26,954 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $352,898 at 686.0 - no clear signal
+2026-03-02 10:06:26,955 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:26,955 - gex_scanner - INFO - Scanning QQQ
+2026-03-02 10:06:26,955 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:27,148 - gex_scanner - INFO - Price: $608.98
+2026-03-02 10:06:27,417 - gex_scanner - INFO - Using expiration: 2026-03-03 (1 days)
+2026-03-02 10:06:27,430 - gex_scanner - INFO - Key GEX levels: [(608.0, '$413,012'), (610.0, '$117,911'), (605.0, '$99,896')]
+2026-03-02 10:06:27,433 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $413,012 at 608.0 - no clear signal
+2026-03-02 10:06:27,434 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:27,434 - gex_scanner - INFO - Scanning NVDA
+2026-03-02 10:06:27,434 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:27,623 - gex_scanner - INFO - Price: $182.71
+2026-03-02 10:06:27,789 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 10:06:27,800 - gex_scanner - INFO - Key GEX levels: [(185.0, '$304,135'), (180.0, '$172,930'), (190.0, '$85,298')]
+2026-03-02 10:06:27,804 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $304,135 at 185.0 - no clear signal
+2026-03-02 10:06:27,805 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:27,805 - gex_scanner - INFO - Scanning TSLA
+2026-03-02 10:06:27,805 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:27,977 - gex_scanner - INFO - Price: $401.68
+2026-03-02 10:06:28,230 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 10:06:28,242 - gex_scanner - INFO - Key GEX levels: [(410.0, '$53,205'), (405.0, '$48,919'), (400.0, '$43,613')]
+2026-03-02 10:06:28,246 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $43,613 at 400.0 - no clear signal
+2026-03-02 10:06:28,246 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:28,246 - gex_scanner - INFO - Scanning AMD
+2026-03-02 10:06:28,246 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:28,438 - gex_scanner - INFO - Price: $197.05
+2026-03-02 10:06:28,662 - gex_scanner - INFO - Using expiration: 2026-03-06 (4 days)
+2026-03-02 10:06:28,681 - gex_scanner - INFO - Key GEX levels: [(205.0, '$71,937'), (200.0, '$63,780'), (190.0, '$63,248')]
+2026-03-02 10:06:28,684 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $63,780 at 200.0 - no clear signal
+2026-03-02 10:06:28,684 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:28,684 - gex_scanner - INFO - Scanning AAPL
+2026-03-02 10:06:28,684 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:28,875 - gex_scanner - INFO - Price: $265.86
+2026-03-02 10:06:29,049 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 10:06:29,058 - gex_scanner - INFO - Key GEX levels: [(270.0, '$61,365'), (265.0, '$60,744'), (267.5, '$35,959')]
+2026-03-02 10:06:29,062 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $60,744 at 265.0 - no clear signal
+2026-03-02 10:06:29,063 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:29,063 - gex_scanner - INFO - Scanning MSFT
+2026-03-02 10:06:29,063 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:29,251 - gex_scanner - INFO - Price: $400.23
+2026-03-02 10:06:29,475 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 10:06:29,482 - gex_scanner - INFO - Key GEX levels: [(405.0, '$32,480'), (400.0, '$23,624'), (395.0, '$21,148')]
+2026-03-02 10:06:29,485 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $23,624 at 400.0 - no clear signal
+2026-03-02 10:06:29,485 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:29,485 - gex_scanner - INFO - Scanning AMZN
+2026-03-02 10:06:29,485 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:29,724 - gex_scanner - INFO - Price: $208.54
+2026-03-02 10:06:29,893 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 10:06:29,896 - gex_scanner - INFO - Key GEX levels: [(210.0, '$61,984'), (215.0, '$31,097'), (207.5, '$26,662')]
+2026-03-02 10:06:29,898 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $26,662 at 207.5 - no clear signal
+2026-03-02 10:06:29,898 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:29,898 - gex_scanner - INFO - Scanning META
+2026-03-02 10:06:29,898 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:30,139 - gex_scanner - INFO - Price: $655.97
+2026-03-02 10:06:30,449 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 10:06:30,463 - gex_scanner - INFO - Key GEX levels: [(660.0, '$13,617'), (650.0, '$12,733'), (655.0, '$5,745')]
+2026-03-02 10:06:30,466 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $5,745 at 655.0 - no clear signal
+2026-03-02 10:06:30,466 - gex_scanner - INFO - 
+==================================================
+2026-03-02 10:06:30,466 - gex_scanner - INFO - Scanning GOOGL
+2026-03-02 10:06:30,466 - gex_scanner - INFO - ==================================================
+2026-03-02 10:06:30,805 - gex_scanner - INFO - Price: $307.50
+2026-03-02 10:06:31,047 - gex_scanner - INFO - Using expiration: 2026-03-04 (2 days)
+2026-03-02 10:06:31,059 - gex_scanner - INFO - Key GEX levels: [(310.0, '$26,091'), (307.5, '$20,643'), (305.0, '$16,646')]
+2026-03-02 10:06:31,062 - gex_scanner - INFO - ⏸️ No signal - Reasons: GEX $20,643 at 307.5 - no clear signal
+2026-03-02 10:06:31,062 - gex_scanner - INFO - 
+============================================================
+2026-03-02 10:06:31,062 - gex_scanner - INFO - SCAN COMPLETE
+2026-03-02 10:06:31,062 - gex_scanner - INFO - Total scanned: 10
+2026-03-02 10:06:31,062 - gex_scanner - INFO - Signals generated: 0
+2026-03-02 10:06:31,062 - gex_scanner - INFO - ============================================================
+

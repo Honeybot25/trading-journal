@@ -1,4 +1,29 @@
-/* Bloomberg Terminal Style CSS */
+/* GEX Terminal - Renaissance Technologies Edition */
+/* Bloomberg Terminal Aesthetic with Institutional Styling */
+
+:root {
+    --bg-primary: #0a0a0a;
+    --bg-panel: #141414;
+    --bg-panel-alt: #0f0f0f;
+    --bg-card: #1a1a1a;
+    --amber: #FF6600;
+    --amber-bright: #FF8800;
+    --amber-dim: #CC5200;
+    --amber-dark: #804000;
+    --yellow: #FFFF00;
+    --green: #00FF00;
+    --green-dim: #00AA00;
+    --red: #FF0000;
+    --red-dim: #AA0000;
+    --white: #FFFFFF;
+    --gray: #808080;
+    --gray-dark: #404040;
+    --gray-light: #A0A0A0;
+    --border: #2a2a2a;
+    --border-bright: #333333;
+    --cyan: #00FFFF;
+    --magenta: #FF00FF;
+}
 
 * {
     margin: 0;
@@ -7,122 +32,148 @@
 }
 
 body {
-    background-color: #0d0d0d;
-    color: #FF6600;
+    background-color: var(--bg-primary);
+    color: var(--amber);
     font-family: 'Courier New', 'Courier', monospace;
     overflow: hidden;
+    line-height: 1.4;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - Terminal aesthetic */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #1a1a1a;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #FF6600;
+    background: var(--amber-dark);
     border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #FF8800;
+    background: var(--amber);
 }
 
 ::-webkit-scrollbar-corner {
-    background: #1a1a1a;
+    background: var(--bg-panel);
 }
 
 /* Selection styling */
 ::selection {
-    background-color: #FF6600;
-    color: #0d0d0d;
+    background-color: var(--amber);
+    color: var(--bg-primary);
 }
 
 /* Input styling */
 input, select, textarea {
     font-family: 'Courier New', monospace;
-    background-color: #0d0d0d;
-    color: #FF6600;
-    border: 1px solid #333333;
+    background-color: var(--bg-primary);
+    color: var(--amber);
+    border: 1px solid var(--border);
     padding: 4px 8px;
     outline: none;
+    font-size: 13px;
 }
 
 input:focus, select:focus, textarea:focus {
-    border-color: #FF6600;
-    box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+    border-color: var(--amber);
+    box-shadow: 0 0 8px rgba(255, 102, 0, 0.4);
 }
 
 /* Button styling */
 button {
     font-family: 'Courier New', monospace;
-    background-color: #FF6600;
-    color: #0d0d0d;
+    background-color: var(--amber);
+    color: var(--bg-primary);
     border: none;
     padding: 4px 12px;
     cursor: pointer;
     font-weight: bold;
-    transition: all 0.1s;
+    transition: all 0.15s ease;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 button:hover {
-    background-color: #FF8800;
+    background-color: var(--amber-bright);
+    box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
 }
 
 button:active {
-    background-color: #CC5200;
+    background-color: var(--amber-dim);
+    transform: translateY(1px);
 }
 
 button.secondary {
-    background-color: #1a1a1a;
-    color: #FF6600;
-    border: 1px solid #FF6600;
+    background-color: var(--bg-panel);
+    color: var(--amber);
+    border: 1px solid var(--amber);
 }
 
 button.secondary:hover {
-    background-color: #FF6600;
-    color: #0d0d0d;
+    background-color: var(--amber);
+    color: var(--bg-primary);
 }
 
-/* Panel styling */
+/* Panel styling - Institutional cards */
 .panel {
-    background-color: #1a1a1a;
-    border: 1px solid #333333;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
 }
 
 .panel-header {
-    background-color: #141414;
-    border-bottom: 1px solid #333333;
-    padding: 5px 10px;
-    color: #FF6600;
+    background-color: var(--bg-panel-alt);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 10px;
+    color: var(--amber);
     font-weight: bold;
     font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Card styling for Renaissance panels */
+.metric-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s ease;
+}
+
+.metric-card:hover {
+    border-color: var(--border-bright);
 }
 
 /* Ticker row styling */
 .ticker-row {
     cursor: pointer;
-    transition: background-color 0.1s;
+    transition: all 0.1s ease;
+    border-left: 2px solid transparent;
 }
 
 .ticker-row:hover {
     background-color: #262626 !important;
+    border-left-color: var(--amber);
 }
 
 .ticker-row.active {
-    background-color: #FF6600 !important;
-    color: #0d0d0d !important;
+    background-color: var(--amber) !important;
+    color: var(--bg-primary) !important;
+    border-left-color: var(--yellow);
 }
 
 .ticker-row.active span {
-    color: #0d0d0d !important;
+    color: var(--bg-primary) !important;
 }
 
-/* Alert styling */
+/* Alert styling - Institutional severity levels */
 .alert-critical {
     animation: flash-red 1s ease-in-out infinite;
 }
@@ -131,25 +182,44 @@ button.secondary:hover {
     animation: flash-amber 2s ease-in-out infinite;
 }
 
+.alert-info {
+    animation: flash-cyan 3s ease-in-out infinite;
+}
+
 @keyframes flash-red {
     0%, 100% { 
-        background-color: #1a1a1a;
-        border-left-color: #FF0000;
+        background-color: var(--bg-panel);
+        border-left-color: var(--red);
+        box-shadow: 0 0 5px var(--red-dim);
     }
     50% { 
-        background-color: rgba(255, 0, 0, 0.2);
+        background-color: rgba(255, 0, 0, 0.15);
         border-left-color: #FF6666;
+        box-shadow: 0 0 15px var(--red);
     }
 }
 
 @keyframes flash-amber {
     0%, 100% { 
-        background-color: #1a1a1a;
-        border-left-color: #FF6600;
+        background-color: var(--bg-panel);
+        border-left-color: var(--amber);
+        box-shadow: 0 0 5px var(--amber-dark);
     }
     50% { 
-        background-color: rgba(255, 102, 0, 0.2);
-        border-left-color: #FF8800;
+        background-color: rgba(255, 102, 0, 0.15);
+        border-left-color: var(--amber-bright);
+        box-shadow: 0 0 15px var(--amber);
+    }
+}
+
+@keyframes flash-cyan {
+    0%, 100% { 
+        background-color: var(--bg-panel);
+        border-left-color: var(--cyan);
+    }
+    50% { 
+        background-color: rgba(0, 255, 255, 0.1);
+        border-left-color: #66FFFF;
     }
 }
 
@@ -178,33 +248,80 @@ button.secondary:hover {
     animation: blink 1s step-end infinite;
 }
 
-/* Plotly chart overrides */
+/* Progress bar animations */
+@keyframes progress-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.progress-bar-active {
+    animation: progress-pulse 2s ease-in-out infinite;
+}
+
+/* Signal strength glow */
+@keyframes signal-glow {
+    0%, 100% { 
+        box-shadow: 0 0 5px var(--green);
+    }
+    50% { 
+        box-shadow: 0 0 20px var(--green), 0 0 30px var(--green-dim);
+    }
+}
+
+.signal-glow-green {
+    animation: signal-glow 2s ease-in-out infinite;
+}
+
+@keyframes signal-glow-red {
+    0%, 100% { 
+        box-shadow: 0 0 5px var(--red);
+    }
+    50% { 
+        box-shadow: 0 0 20px var(--red), 0 0 30px var(--red-dim);
+    }
+}
+
+.signal-glow-red {
+    animation: signal-glow-red 2s ease-in-out infinite;
+}
+
+/* Plotly chart overrides - Terminal styling */
 .js-plotly-plot .plotly .main-svg {
     background-color: transparent !important;
 }
 
 .js-plotly-plot .plotly .gtitle {
     font-family: 'Courier New', monospace !important;
-    color: #FF6600 !important;
+    color: var(--amber) !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
 }
 
 .js-plotly-plot .plotly .g-xtitle,
 .js-plotly-plot .plotly .g-ytitle {
     font-family: 'Courier New', monospace !important;
-    fill: #FF6600 !important;
+    fill: var(--amber) !important;
+    font-size: 10px !important;
 }
 
 .js-plotly-plot .plotly .g-xaxis .tick text,
 .js-plotly-plot .plotly .g-yaxis .tick text {
     font-family: 'Courier New', monospace !important;
-    fill: #808080 !important;
+    fill: var(--gray) !important;
+    font-size: 9px !important;
 }
 
 .js-plotly-plot .plotly .gridlayer path {
-    stroke: #333333 !important;
+    stroke: var(--border) !important;
+    stroke-width: 0.5px !important;
 }
 
-/* Table styling */
+.js-plotly-plot .plotly .zerolinelayer path {
+    stroke: var(--amber-dark) !important;
+    stroke-width: 1px !important;
+}
+
+/* Table styling - Institutional */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -212,16 +329,21 @@ table {
 }
 
 th {
-    color: #FF6600;
-    border-bottom: 2px solid #FF6600;
-    padding: 6px 8px;
+    color: var(--amber);
+    border-bottom: 2px solid var(--amber);
+    padding: 8px 10px;
     text-align: left;
     font-weight: bold;
+    background-color: var(--bg-panel-alt);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
 }
 
 td {
-    padding: 5px 8px;
-    border-bottom: 1px solid #333333;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.1s ease;
 }
 
 tr:hover td {
@@ -229,22 +351,28 @@ tr:hover td {
 }
 
 /* Terminal text colors */
-.text-amber { color: #FF6600; }
-.text-amber-bright { color: #FF8800; }
-.text-yellow { color: #FFFF00; }
-.text-green { color: #00FF00; }
-.text-red { color: #FF0000; }
-.text-white { color: #FFFFFF; }
-.text-gray { color: #808080; }
+.text-amber { color: var(--amber); }
+.text-amber-bright { color: var(--amber-bright); }
+.text-yellow { color: var(--yellow); }
+.text-green { color: var(--green); }
+.text-green-dim { color: var(--green-dim); }
+.text-red { color: var(--red); }
+.text-red-dim { color: var(--red-dim); }
+.text-white { color: var(--white); }
+.text-gray { color: var(--gray); }
+.text-gray-light { color: var(--gray-light); }
+.text-cyan { color: var(--cyan); }
+.text-magenta { color: var(--magenta); }
 
 /* Background colors */
-.bg-terminal { background-color: #0d0d0d; }
-.bg-panel { background-color: #1a1a1a; }
-.bg-panel-alt { background-color: #141414; }
+.bg-terminal { background-color: var(--bg-primary); }
+.bg-panel { background-color: var(--bg-panel); }
+.bg-panel-alt { background-color: var(--bg-panel-alt); }
+.bg-card { background-color: var(--bg-card); }
 
 /* Border colors */
-.border-amber { border-color: #FF6600; }
-.border-gray { border-color: #333333; }
+.border-amber { border-color: var(--amber); }
+.border-gray { border-color: var(--border); }
 
 /* Status indicators */
 .status-dot {
@@ -255,10 +383,22 @@ tr:hover td {
     margin-right: 6px;
 }
 
-.status-dot.green { background-color: #00FF00; }
-.status-dot.amber { background-color: #FF6600; }
-.status-dot.red { background-color: #FF0000; }
-.status-dot.gray { background-color: #808080; }
+.status-dot.green { 
+    background-color: var(--green);
+    box-shadow: 0 0 5px var(--green);
+}
+
+.status-dot.amber { 
+    background-color: var(--amber);
+    box-shadow: 0 0 5px var(--amber);
+}
+
+.status-dot.red { 
+    background-color: var(--red);
+    box-shadow: 0 0 5px var(--red);
+}
+
+.status-dot.gray { background-color: var(--gray); }
 
 /* Loading spinner */
 @keyframes spin {
@@ -267,57 +407,60 @@ tr:hover td {
 }
 
 .spinner {
-    border: 2px solid #333333;
-    border-top: 2px solid #FF6600;
+    border: 2px solid var(--border);
+    border-top: 2px solid var(--amber);
     border-radius: 50%;
     width: 20px;
     height: 20px;
     animation: spin 1s linear infinite;
 }
 
-/* Modal overlay */
+/* Modal overlay - Institutional style */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(10, 10, 10, 0.95);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(3px);
 }
 
 .modal-content {
-    background-color: #1a1a1a;
-    border: 2px solid #FF6600;
+    background-color: var(--bg-panel);
+    border: 2px solid var(--amber);
     padding: 20px;
     max-width: 600px;
     max-height: 80vh;
     overflow-y: auto;
+    box-shadow: 0 0 30px rgba(255, 102, 0, 0.3);
 }
 
 /* Command line styling */
 .command-line {
     display: flex;
     align-items: center;
-    background-color: #141414;
-    padding: 5px 10px;
-    border-bottom: 1px solid #333333;
+    background-color: var(--bg-panel-alt);
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
 }
 
 .command-prompt {
-    color: #FF6600;
+    color: var(--amber);
     font-weight: bold;
     margin-right: 8px;
+    font-size: 14px;
 }
 
 .command-input {
     flex: 1;
     background: transparent;
     border: none;
-    color: #FF6600;
+    color: var(--amber);
     font-family: 'Courier New', monospace;
     font-size: 14px;
     outline: none;
@@ -326,50 +469,57 @@ tr:hover td {
 /* Function key bar */
 .fkey-bar {
     display: flex;
-    background-color: #1a1a1a;
-    border-bottom: 1px solid #333333;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
     overflow-x: auto;
 }
 
 .fkey {
     padding: 4px 12px;
-    border-right: 1px solid #333333;
+    border-right: 1px solid var(--border);
     font-size: 10px;
-    color: #FF6600;
+    color: var(--amber);
     cursor: pointer;
     white-space: nowrap;
+    transition: all 0.1s ease;
 }
 
 .fkey:hover {
     background-color: #262626;
+    color: var(--amber-bright);
 }
 
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-    .main-content {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        height: auto;
-        max-height: 200px;
-    }
+/* Metric boxes - Renaissance style */
+.metric-box {
+    background: linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(20,20,20,0.95) 100%);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 10px;
+    margin-bottom: 8px;
 }
 
-@media (max-width: 768px) {
-    body {
-        font-size: 11px;
-    }
-    
-    .fkey-bar {
-        display: none;
-    }
-    
-    .panel {
-        margin-bottom: 10px;
-    }
+.metric-label {
+    font-size: 9px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
+
+.metric-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--white);
+}
+
+.metric-value.positive {
+    color: var(--green);
+}
+
+.metric-value.negative {
+    color: var(--red);
+}
+
 /* Signal Animation Keyframes */
 @keyframes flash {
     0%, 100% { opacity: 1; }
@@ -377,8 +527,8 @@ tr:hover td {
 }
 
 @keyframes pulse-border {
-    0%, 100% { border-color: #FF6600; }
-    50% { border-color: #FFFF00; }
+    0%, 100% { border-color: var(--amber); }
+    50% { border-color: var(--yellow); }
 }
 
 @keyframes scroll {
@@ -391,12 +541,12 @@ tr:hover td {
 }
 
 .signal-active {
-    border: 2px solid #00FF00;
+    border: 2px solid var(--green);
     animation: pulse-border 2s ease-in-out infinite;
 }
 
 .signal-put {
-    border: 2px solid #FF0000;
+    border: 2px solid var(--red);
     animation: pulse-border 2s ease-in-out infinite;
 }
 
@@ -417,16 +567,195 @@ tr:hover td {
 
 .signal-section {
     background: linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(20,20,20,0.95) 100%);
-    border: 1px solid #333;
-    border-radius: 4px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
     margin: 6px 0;
-    padding: 8px;
+    padding: 10px;
 }
 
 .signal-section-title {
     font-size: 9px;
     font-weight: bold;
     text-transform: uppercase;
-    color: #FF6600;
+    color: var(--amber);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+/* Progress bars */
+.progress-container {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-panel-alt);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+    background: linear-gradient(90deg, var(--amber-dark) 0%, var(--amber) 100%);
+}
+
+.progress-fill.green {
+    background: linear-gradient(90deg, var(--green-dim) 0%, var(--green) 100%);
+}
+
+.progress-fill.red {
+    background: linear-gradient(90deg, var(--red-dim) 0%, var(--red) 100%);
+}
+
+/* Heatmap cell styling */
+.heatmap-cell {
+    transition: all 0.2s ease;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.05);
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Tooltip styling */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--bg-panel);
+    color: var(--white);
+    padding: 6px 10px;
+    border: 1px solid var(--amber);
+    font-size: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+    bottom: calc(100% + 5px);
+}
+
+/* Data grid for institutional look */
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.data-item {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+}
+
+.data-item-label {
+    font-size: 8px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 4px;
+}
+
+.data-item-value {
+    font-size: 14px;
+    color: var(--white);
+    font-weight: bold;
+}
+
+/* Separator lines */
+.separator {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+    margin: 10px 0;
+}
+
+/* Highlight box for important info */
+.highlight-box {
+    background-color: rgba(255, 102, 0, 0.1);
+    border-left: 3px solid var(--amber);
+    padding: 10px;
+    margin: 8px 0;
+}
+
+/* Glow effects for active elements */
+.glow-amber {
+    box-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
+}
+
+.glow-green {
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.glow-red {
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .data-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+    }
+    
+    .data-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 11px;
+    }
+    
+    .fkey-bar {
+        display: none;
+    }
+    
+    .panel {
+        margin-bottom: 10px;
+    }
+    
+    .data-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .metric-value {
+        font-size: 14px;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background-color: white;
+        color: black;
+    }
+    
+    .panel {
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+    }
 }
