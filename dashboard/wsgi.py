@@ -10,19 +10,23 @@ import traceback
 # Add the dashboard directory to the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Set environment variables for Vercel
-os.environ.setdefault('VERCEL', '1')
-os.environ.setdefault('DASH_DEBUG', 'false')
+# Set environment variables for Vercel BEFORE importing app
+os.environ['VERCEL'] = '1'
+os.environ['DASH_DEBUG'] = 'false'
+os.environ['DASH_SILENCE_ROUTES_LOGGING'] = 'true'
 
 try:
     # Import and expose the Flask server from the Dash app
-    from app import app
+    from app import app as dash_app
     
-    # For Vercel serverless, we need to expose the Flask server
-    application = app.server
+    # Get the Flask server instance
+    server = dash_app.server
     
-    # Vercel looks for 'app' variable
-    server = app.server
+    # Vercel Python runtime looks for 'app' variable
+    app = server
+    
+    # Also expose as 'application' for WSGI compatibility
+    application = server
     
     # Add health check endpoint
     @server.route('/health')
@@ -40,25 +44,22 @@ try:
         except Exception as e:
             return {'error': str(e), 'signals': []}, 500
     
-    # This is what Vercel calls
-    app_for_vercel = server
-    
 except Exception as e:
     # Log the error for debugging
     error_msg = f"Error loading app: {str(e)}\n{traceback.format_exc()}"
     print(error_msg, file=sys.stderr)
     
     # Create a minimal Flask app that shows the error
-    from flask import Flask, jsonify
-    server = Flask(__name__)
+    from flask import Flask
+    app = Flask(__name__)
     
-    @server.route('/')
+    @app.route('/')
     def error_page():
         return f"<h1>Server Error</h1><pre>{error_msg}</pre>", 500
     
-    @server.route('/health')
+    @app.route('/health')
     def health_check_error():
         return {'status': 'error', 'message': str(e)}, 500
     
-    application = server
-    app_for_vercel = server
+    application = app
+    server = app

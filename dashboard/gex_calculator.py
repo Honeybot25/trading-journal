@@ -5,8 +5,24 @@ Calculates Gamma Exposure from options data - enhanced for Polygon.io data
 
 import pandas as pd
 import numpy as np
-from scipy.stats import norm
 from datetime import datetime, timedelta
+
+# Simple normal distribution implementation (replaces scipy)
+def _norm_pdf(x):
+    """Standard normal PDF"""
+    return np.exp(-0.5 * x**2) / np.sqrt(2 * np.pi)
+
+class _Norm:
+    @staticmethod
+    def pdf(x):
+        return _norm_pdf(x)
+    
+    @staticmethod
+    def cdf(x):
+        # Standard normal CDF approximation
+        return 0.5 * (1 + np.sign(x) * np.sqrt(1 - np.exp(-2/np.pi * x**2)))
+
+norm = _Norm()
 
 
 class GEXCalculator:

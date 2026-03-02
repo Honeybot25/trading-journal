@@ -15,8 +15,5 @@
       "dest": "wsgi.py"
     }
   ],
-  "github": {
-    "enabled": false
-  },
   "public": true
 }

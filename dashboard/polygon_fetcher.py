@@ -13,7 +13,18 @@ import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
 import requests
-from scipy.stats import norm
+# Simple normal distribution implementation (replaces scipy)
+def _norm_pdf(x):
+    """Standard normal PDF"""
+    import numpy as np
+    return np.exp(-0.5 * x**2) / np.sqrt(2 * np.pi)
+
+class _Norm:
+    @staticmethod
+    def pdf(x):
+        return _norm_pdf(x)
+
+norm = _Norm()
 
 # Load environment variables
 try:
@@ -67,13 +78,17 @@ class PolygonFetcher:
         self.base_url = "https://api.polygon.io"
         self.rate_limiter = PolygonRateLimiter(max_requests_per_minute=5)
         self.cache = {}
-        self.cache_ttl = 300
+        # Reduced cache TTL for fresher data: 45s for price, 90s for options
+        self.price_cache_ttl = 45  # Price data gets stale fast
+        self.options_cache_ttl = 90  # Options data can be slightly older
         self.last_fetch = {}
+        self.last_fetch_times = {}  # Track exact timestamps for display
         self._lock = threading.Lock()
         self.api_calls_made = 0
         self.data_source_status = "UNKNOWN"
         self.last_error = None
         self.last_successful_fetch = None
+        self.data_source_timestamps = {}  # Track per-ticker timestamps
     
     def is_configured(self) -> bool:
         return bool(self.api_key) and len(self.api_key) > 10
@@ -86,17 +101,37 @@ class PolygonFetcher:
             "api_calls_made": self.api_calls_made,
             "data_source": self.data_source_status,
             "last_error": self.last_error,
-            "last_successful_fetch": self.last_successful_fetch
+            "last_successful_fetch": self.last_successful_fetch,
+            "price_cache_ttl": self.price_cache_ttl,
+            "options_cache_ttl": self.options_cache_ttl,
+            "timestamps": self.data_source_timestamps
         }
     
     def _get_cache_key(self, ticker: str, data_type: str) -> str:
         return f"polygon_{ticker}_{data_type}"
     
-    def _is_cache_valid(self, cache_key: str) -> bool:
+    def _is_cache_valid(self, cache_key: str, data_type: str = "price") -> bool:
         if cache_key not in self.last_fetch:
             return False
         elapsed = time.time() - self.last_fetch[cache_key]
-        return elapsed < self.cache_ttl
+        # Use different TTLs for different data types
+        if data_type == "price":
+            return elapsed < self.price_cache_ttl
+        return elapsed < self.options_cache_ttl
+    
+    def get_last_update_time(self, ticker: str, data_type: str = "price") -> Optional[str]:
+        """Get formatted last update time for a ticker"""
+        cache_key = self._get_cache_key(ticker, data_type)
+        if cache_key in self.last_fetch_times:
+            return self.last_fetch_times[cache_key]
+        return None
+    
+    def get_data_age_seconds(self, ticker: str, data_type: str = "price") -> int:
+        """Get data age in seconds for staleness checks"""
+        cache_key = self._get_cache_key(ticker, data_type)
+        if cache_key in self.last_fetch:
+            return int(time.time() - self.last_fetch[cache_key])
+        return -1
     
     def _make_request(self, endpoint: str, params: Dict = None) -> Optional[Dict]:
         if not self.is_configured():
@@ -127,7 +162,8 @@ class PolygonFetcher:
         cache_key = self._get_cache_key(ticker, "price")
         
         with self._lock:
-            if self._is_cache_valid(cache_key) and cache_key in self.cache:
+            if self._is_cache_valid(cache_key, "price") and cache_key in self.cache:
+                self.data_source_status = "POLYGON (CACHED)"
                 return self.cache[cache_key]
         
         endpoint = f"/v2/aggs/ticker/{ticker}/prev"
@@ -139,7 +175,10 @@ class PolygonFetcher:
                 with self._lock:
                     self.cache[cache_key] = price
                     self.last_fetch[cache_key] = time.time()
+                    self.last_fetch_times[cache_key] = datetime.now().strftime("%H:%M:%S")
+                    self.data_source_timestamps[ticker] = time.time()
                 self.data_source_status = "POLYGON"
+                self.last_successful_fetch = datetime.now().strftime("%H:%M:%S")
                 return price
         
         endpoint = f"/v2/last/trade/{ticker}"
@@ -151,7 +190,10 @@ class PolygonFetcher:
                 with self._lock:
                     self.cache[cache_key] = price
                     self.last_fetch[cache_key] = time.time()
+                    self.last_fetch_times[cache_key] = datetime.now().strftime("%H:%M:%S")
+                    self.data_source_timestamps[ticker] = time.time()
                 self.data_source_status = "POLYGON"
+                self.last_successful_fetch = datetime.now().strftime("%H:%M:%S")
                 return price
         
         return None
@@ -217,7 +259,7 @@ class PolygonFetcher:
         cache_key = self._get_cache_key(ticker, "options")
         
         with self._lock:
-            if self._is_cache_valid(cache_key) and cache_key in self.cache:
+            if self._is_cache_valid(cache_key, "options") and cache_key in self.cache:
                 self.data_source_status = "POLYGON (CACHED)"
                 return self.cache[cache_key]
         
@@ -265,6 +307,8 @@ class PolygonFetcher:
         with self._lock:
             self.cache[cache_key] = df
             self.last_fetch[cache_key] = time.time()
+            self.last_fetch_times[cache_key] = datetime.now().strftime("%H:%M:%S")
+            self.data_source_timestamps[ticker] = time.time()
         
         self.data_source_status = "POLYGON"
         self.last_successful_fetch = datetime.now().strftime("%H:%M:%S")

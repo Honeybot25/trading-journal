@@ -11,6 +11,7 @@ import time
 import threading
 
 from polygon_fetcher import PolygonFetcher, get_polygon_fetcher
+from tradier_client import TradierOptionsClient, get_tradier_client
 
 
 class DataFetcher:
@@ -18,47 +19,106 @@ class DataFetcher:
     
     def __init__(self):
         self.yf_cache = {}
-        self.yf_cache_ttl = 60
+        # Reduced cache TTL for fresher data - prices stale after 30s, options after 60s
+        self.yf_price_ttl = 30  # Price data gets stale fast
+        self.yf_options_ttl = 60  # Options can be slightly older
         self.yf_last_fetch = {}
         self.price_cache = {}
+        self.last_fetch_times = {}  # Track exact timestamps
         self._lock = threading.Lock()
         
         # Initialize Polygon fetcher
         self.polygon = get_polygon_fetcher()
         self.use_polygon = self.polygon.is_configured()
         
+        # Initialize Tradier for options
+        self.tradier = get_tradier_client()
+        self.use_tradier = self.tradier.is_configured()
+        
         # Data source tracking
         self.last_data_source = "UNKNOWN"
         self.data_quality = "BASIC"
+        self.last_update_timestamp = None
     
     def get_data_source_status(self):
         """Get current data source status"""
-        polygon_status = self.polygon.get_status()
+        polygon_status = self.polygon.get_status() if self.use_polygon else None
         return {
             'source': self.last_data_source,
             'quality': self.data_quality,
             'polygon_status': polygon_status,
-            'using_polygon': self.last_data_source == "POLYGON"
+            'using_polygon': self.last_data_source == "POLYGON",
+            'using_tradier': self.last_data_source == "TRADIER",
+            'tradier_configured': self.use_tradier
         }
     
     def _get_cache_key(self, ticker, data_type):
         return f"yf_{ticker}_{data_type}"
     
-    def _is_yf_cache_valid(self, cache_key):
+    def _is_yf_cache_valid(self, cache_key, data_type="price"):
         if cache_key not in self.yf_last_fetch:
             return False
         elapsed = time.time() - self.yf_last_fetch[cache_key]
-        return elapsed < self.yf_cache_ttl
+        # Use different TTLs for different data types
+        if data_type == "price":
+            return elapsed < self.yf_price_ttl
+        return elapsed < self.yf_options_ttl
     
-    def get_current_price(self, ticker):
-        """Get current stock price - Polygon primary, yfinance fallback"""
+    def get_data_freshness(self, ticker):
+        """Get data freshness info for display"""
+        # Check Polygon first
+        polygon_age = self.polygon.get_data_age_seconds(ticker, "price")
+        if polygon_age >= 0:
+            return {
+                "source": "POLYGON",
+                "age_seconds": polygon_age,
+                "is_stale": polygon_age > 300,  # 5 minutes = stale
+                "last_update": self.polygon.get_last_update_time(ticker, "price")
+            }
+        
+        # Check yfinance cache
+        cache_key = self._get_cache_key(ticker, "price")
+        if cache_key in self.yf_last_fetch:
+            age = int(time.time() - self.yf_last_fetch[cache_key])
+            return {
+                "source": "YFINANCE",
+                "age_seconds": age,
+                "is_stale": age > 300,  # 5 minutes = stale
+                "last_update": self.last_fetch_times.get(cache_key)
+            }
+        
+        return {
+            "source": "UNKNOWN",
+            "age_seconds": -1,
+            "is_stale": True,
+            "last_update": None
+        }
+    
+    def get_current_price(self, ticker, force_refresh=False):
+        """Get current stock price - Polygon primary, yfinance fallback
+        
+        Args:
+            ticker: Stock symbol
+            force_refresh: If True, bypass cache and fetch fresh data
+        """
         # Try Polygon first if configured
         if self.use_polygon:
             try:
+                # Check if we need fresh data
+                if not force_refresh:
+                    polygon_age = self.polygon.get_data_age_seconds(ticker, "price")
+                    if polygon_age >= 0 and polygon_age < 45:  # Use cached if < 45s old
+                        self.last_data_source = "POLYGON (CACHED)"
+                        self.data_quality = "PREMIUM"
+                        cached_price = self.polygon.cache.get(self.polygon._get_cache_key(ticker, "price"))
+                        if cached_price:
+                            return cached_price
+                
                 price = self.polygon.get_current_price(ticker)
                 if price:
                     self.last_data_source = "POLYGON"
                     self.data_quality = "PREMIUM"
+                    self.last_update_timestamp = time.time()
                     return price
             except Exception:
                 pass
@@ -67,7 +127,8 @@ class DataFetcher:
         cache_key = self._get_cache_key(ticker, 'price')
         
         with self._lock:
-            if self._is_yf_cache_valid(cache_key) and cache_key in self.price_cache:
+            if not force_refresh and self._is_yf_cache_valid(cache_key, 'price') and cache_key in self.price_cache:
+                self.last_data_source = "YFINANCE (CACHED)"
                 return self.price_cache[cache_key]
         
         try:
@@ -79,6 +140,8 @@ class DataFetcher:
                 with self._lock:
                     self.price_cache[cache_key] = price
                     self.yf_last_fetch[cache_key] = time.time()
+                    self.last_fetch_times[cache_key] = datetime.now().strftime("%H:%M:%S")
+                    self.last_update_timestamp = time.time()
                 self.last_data_source = "YFINANCE"
                 self.data_quality = "BASIC"
                 return price
@@ -89,6 +152,8 @@ class DataFetcher:
                 with self._lock:
                     self.price_cache[cache_key] = price
                     self.yf_last_fetch[cache_key] = time.time()
+                    self.last_fetch_times[cache_key] = datetime.now().strftime("%H:%M:%S")
+                    self.last_update_timestamp = time.time()
                 self.last_data_source = "YFINANCE"
                 self.data_quality = "BASIC"
                 return price
@@ -127,15 +192,43 @@ class DataFetcher:
         
         return np.random.uniform(-2, 2)
     
-    def get_options_chain(self, ticker):
-        """Fetch options chain - Polygon primary, yfinance fallback"""
-        # Try Polygon first for premium data
+    def get_options_chain(self, ticker, force_refresh=False):
+        """Fetch options chain - Tradier first (free), Polygon second, yfinance fallback
+        
+        Args:
+            ticker: Stock symbol
+            force_refresh: If True, bypass cache and fetch fresh data
+        """
+        # Try Tradier first (free tier with delayed data)
+        if self.use_tradier:
+            try:
+                options_data = self.tradier.get_options_chain(ticker)
+                if options_data is not None and not options_data.empty:
+                    self.last_data_source = "TRADIER"
+                    self.data_quality = "DELAYED"
+                    self.last_update_timestamp = time.time()
+                    return options_data
+            except Exception as e:
+                print(f"[ERROR] Tradier options fetch: {e}")
+        
+        # Try Polygon second for premium data
         if self.use_polygon:
             try:
+                # Check if we need fresh data
+                if not force_refresh:
+                    polygon_age = self.polygon.get_data_age_seconds(ticker, "options")
+                    if polygon_age >= 0 and polygon_age < 90:  # Use cached if < 90s old
+                        cached = self.polygon.cache.get(self.polygon._get_cache_key(ticker, "options"))
+                        if cached is not None and not cached.empty:
+                            self.last_data_source = "POLYGON (CACHED)"
+                            self.data_quality = "PREMIUM"
+                            return cached
+                
                 options_data = self.polygon.get_options_chain(ticker)
                 if options_data is not None and not options_data.empty:
                     self.last_data_source = "POLYGON"
                     self.data_quality = "PREMIUM"
+                    self.last_update_timestamp = time.time()
                     return options_data
             except Exception:
                 pass
@@ -144,7 +237,7 @@ class DataFetcher:
         cache_key = self._get_cache_key(ticker, 'options')
         
         with self._lock:
-            if self._is_yf_cache_valid(cache_key) and cache_key in self.yf_cache:
+            if not force_refresh and self._is_yf_cache_valid(cache_key, 'options') and cache_key in self.yf_cache:
                 self.last_data_source = "YFINANCE (CACHED)"
                 self.data_quality = "BASIC"
                 return self.yf_cache[cache_key]
@@ -200,6 +293,8 @@ class DataFetcher:
                 with self._lock:
                     self.yf_cache[cache_key] = combined
                     self.yf_last_fetch[cache_key] = time.time()
+                    self.last_fetch_times[cache_key] = datetime.now().strftime("%H:%M:%S")
+                    self.last_update_timestamp = time.time()
                 
                 self.last_data_source = "YFINANCE"
                 self.data_quality = "BASIC"
@@ -268,6 +363,8 @@ class DataFetcher:
         with self._lock:
             self.yf_cache[cache_key] = df
             self.yf_last_fetch[cache_key] = time.time()
+            self.last_fetch_times[cache_key] = datetime.now().strftime("%H:%M:%S")
+            self.last_update_timestamp = time.time()
         
         self.last_data_source = "SIMULATED"
         self.data_quality = "BASIC"
@@ -298,4 +395,7 @@ class DataFetcher:
             self.yf_cache.clear()
             self.price_cache.clear()
             self.yf_last_fetch.clear()
+            self.last_fetch_times.clear()
+            self.last_update_timestamp = None
         self.polygon.clear_cache()
+        print("[CACHE] All caches cleared successfully")

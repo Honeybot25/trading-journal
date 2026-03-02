@@ -1,0 +1,30 @@
+{
+  "name": "options-discord-alerts",
+  "version": "1.0.0",
+  "description": "Discord alert system for high-confidence options trading signals",
+  "main": "dist/discord-alerts.js",
+  "types": "dist/discord-alerts.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx test/discord-alerts.test.ts",
+    "test:live": "tsx test/send-test-alert.ts",
+    "dev": "tsx src/lib/discord-alerts.ts",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "options",
+    "trading",
+    "discord",
+    "alerts",
+    "webhook"
+  ],
+  "author": "TraderBot",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}
