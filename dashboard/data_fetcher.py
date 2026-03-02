@@ -12,6 +12,7 @@ import threading
 
 from polygon_fetcher import PolygonFetcher, get_polygon_fetcher
 from tradier_client import TradierOptionsClient, get_tradier_client
+from demo_data import DemoDataGenerator, get_demo_generator
 
 
 class DataFetcher:
@@ -34,6 +35,10 @@ class DataFetcher:
         # Initialize Tradier for options
         self.tradier = get_tradier_client()
         self.use_tradier = self.tradier.is_configured()
+        
+        # Demo mode for testing
+        self.demo = get_demo_generator()
+        self.use_demo = os.environ.get('DEMO_MODE', 'false').lower() == 'true'
         
         # Data source tracking
         self.last_data_source = "UNKNOWN"
@@ -302,6 +307,15 @@ class DataFetcher:
             
         except Exception:
             pass
+        
+        # Final fallback: Demo mode
+        try:
+            demo_data = self.demo.generate_demo_options_chain(ticker)
+            self.last_data_source = "DEMO"
+            self.data_quality = "SIMULATED"
+            return demo_data
+        except Exception as e:
+            print(f"[ERROR] Demo data generation failed: {e}")
         
         return self._generate_simulated_options(ticker)
     
